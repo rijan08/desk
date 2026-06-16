@@ -61,25 +61,17 @@
   .count{font-family:var(--mono);font-size:12px;letter-spacing:.5px;color:var(--ink-faint);white-space:nowrap;}
   .count b{color:var(--teal);}
 
-  /* group */
-  .group{margin:38px 0 0;}
-  .group-head{margin-bottom:4px;}
-  .group-head h2{font-family:var(--serif);font-weight:600;font-size:24px;letter-spacing:-.3px;margin:0;color:var(--ink);}
-  .group-rule{height:1px;background:linear-gradient(90deg,var(--line),transparent);margin:10px 0 18px;}
-
   /* card grid */
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:26px;}
   .card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);
     border-radius:12px;padding:18px;transition:border-color .15s,background .15s;}
   .card:hover{border-color:var(--line2);background:var(--card2);}
-  .card .ctag{font-family:var(--mono);font-size:10px;letter-spacing:1.4px;text-transform:uppercase;
-    color:var(--accent,var(--teal));margin-bottom:10px;}
+  .card .ctag{align-self:flex-start;font-family:var(--mono);font-size:10px;letter-spacing:1.2px;text-transform:uppercase;
+    color:var(--accent,var(--teal));background:var(--bg2);border:1px solid var(--line2);
+    padding:2px 8px;border-radius:20px;margin-bottom:12px;}
   .card h3{font-family:var(--serif);font-weight:600;font-size:19px;line-height:1.2;margin:0 0 8px;color:var(--ink);letter-spacing:-.2px;}
   .card p{font-size:13.5px;color:var(--ink-dim);margin:0;line-height:1.5;}
 
-  /* empty states */
-  .empty{font-family:var(--mono);font-size:13px;color:var(--ink-faint);
-    border:1px dashed var(--line2);border-radius:10px;padding:18px 20px;}
   #noresults{display:none;text-align:center;font-family:var(--mono);font-size:13px;color:var(--ink-faint);padding:50px 0;}
 
   .footer{margin:70px 0 60px;font-family:var(--mono);font-size:11px;color:var(--ink-faint);text-align:center;letter-spacing:.5px;}
@@ -113,7 +105,7 @@
       <div class="count"><b id="shown">0</b> / <span id="total">0</span> entries</div>
     </div>
 
-    <div id="board"><!-- groups render here --></div>
+    <div id="board" class="grid"><!-- cards render here --></div>
     <div id="noresults">No entries match that filter.</div>
   </main>
 
@@ -123,15 +115,18 @@
 
 <script>
   /* ──────────────────────────────────────────────────────────────
-     ENTRIES — to add a doc: create  <slug>/index.html  then add an
-     object below.  url has NO trailing ".html" (clean URL).
-     accent: teal | amber | violet | rose
+     ENTRIES — one object per doc, shown as a flat list of cards.
+     The `category` is just a tag/label on the card; on disk the doc
+     lives under that category folder. So `url` is:
+         <category-folder>/<slug>      (lowercase, no trailing .html)
+     e.g.  learning/react-native-roadmap
+     accent (the tag colour): teal | amber | violet | rose
      ────────────────────────────────────────────────────────────── */
   const ENTRIES = [
     {
       category: "Learning",
       title: "React Native Mastery Roadmap",
-      url: "react-native-roadmap",
+      url: "learning/react-native-roadmap",
       desc: "A leverage-resequenced roadmap from “it works” to “I know why” — JS internals, React, RN architecture, performance, and the path to senior.",
       accent: "amber",
       tags: ["react native", "roadmap", "career"]
@@ -139,20 +134,13 @@
     {
       category: "Learning",
       title: "MQTT Rider App Field Manual",
-      url: "mqtt-rider-app",
+      url: "learning/mqtt-rider-app",
       desc: "Production MQTT for a React Native rider app — broker/topic/QoS model, live location, reconnection, and battery trade-offs.",
       accent: "teal",
       tags: ["mqtt", "react native", "real-time"]
     },
-    // ── Personal ──────────────────────────────────────────────────
-    // { category: "Personal", title: "…", url: "…", desc: "…", accent: "violet", tags: ["…"] },
+    // { category: "Personal", title: "…", url: "personal/…", desc: "…", accent: "violet", tags: ["…"] },
   ];
-
-  /* Category order + display config. A category listed here always
-     shows its heading, even when empty. */
-  const CATEGORIES = ["Learning", "Personal"];
-  // ── Writing (enable later) ──────────────────────────────────────
-  // CATEGORIES.push("Writing");
 
   const ACCENTS = {teal:"var(--teal)", amber:"var(--amber)", violet:"var(--violet)", rose:"var(--rose)"};
   const board = document.getElementById("board");
@@ -160,65 +148,31 @@
   const shownEl = document.getElementById("shown");
   const noResults = document.getElementById("noresults");
 
-  // Build the DOM once.
-  CATEGORIES.forEach(cat => {
-    const items = ENTRIES.filter(e => e.category === cat);
-    const group = document.createElement("section");
-    group.className = "group";
-    group.dataset.category = cat;
-
-    const head = document.createElement("div");
-    head.className = "group-head";
-    head.innerHTML = '<h2>' + cat + '</h2>';
-    group.appendChild(head);
-
-    const rule = document.createElement("div");
-    rule.className = "group-rule";
-    group.appendChild(rule);
-
-    if (items.length === 0) {
-      const empty = document.createElement("div");
-      empty.className = "empty";
-      empty.textContent = "Nothing here yet.";
-      group.appendChild(empty);
-    } else {
-      const grid = document.createElement("div");
-      grid.className = "grid";
-      items.forEach(e => {
-        const a = document.createElement("a");
-        a.className = "card";
-        a.href = e.url;
-        a.style.setProperty("--accent", ACCENTS[e.accent] || ACCENTS.teal);
-        a.dataset.search = (e.title + " " + e.desc + " " + (e.tags||[]).join(" ") + " " + e.category).toLowerCase();
-        a.innerHTML =
-          '<span class="ctag">' + e.category + '</span>' +
-          '<h3>' + e.title + '</h3>' +
-          '<p>' + e.desc + '</p>';
-        grid.appendChild(a);
-      });
-      group.appendChild(grid);
-    }
-    board.appendChild(group);
+  // Build the flat card list once.
+  ENTRIES.forEach(e => {
+    const a = document.createElement("a");
+    a.className = "card";
+    a.href = e.url;
+    a.style.setProperty("--accent", ACCENTS[e.accent] || ACCENTS.teal);
+    a.dataset.search = (e.title + " " + e.desc + " " + (e.tags||[]).join(" ") + " " + e.category).toLowerCase();
+    a.innerHTML =
+      '<span class="ctag">' + e.category + '</span>' +
+      '<h3>' + e.title + '</h3>' +
+      '<p>' + e.desc + '</p>';
+    board.appendChild(a);
   });
 
   totalEl.textContent = ENTRIES.length;
 
-  // Live filter + counts.
+  // Live filter + count.
   const input = document.getElementById("filter");
   function apply() {
     const q = input.value.trim().toLowerCase();
     let shown = 0;
-    document.querySelectorAll(".group").forEach(group => {
-      const cards = group.querySelectorAll(".card");
-      let groupShown = 0;
-      cards.forEach(card => {
-        const match = !q || card.dataset.search.includes(q);
-        card.style.display = match ? "" : "none";
-        if (match) { shown++; groupShown++; }
-      });
-      // When filtering, hide groups with no matching cards (keep empties visible only when no query).
-      const hasCards = cards.length > 0;
-      group.style.display = (q && groupShown === 0 && hasCards) ? "none" : (q && !hasCards ? "none" : "");
+    board.querySelectorAll(".card").forEach(card => {
+      const match = !q || card.dataset.search.includes(q);
+      card.style.display = match ? "" : "none";
+      if (match) shown++;
     });
     shownEl.textContent = shown;
     noResults.style.display = (shown === 0 && q) ? "block" : "none";

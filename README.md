@@ -1,8 +1,9 @@
 # desk
 
 A small personal shelf of documents, served as a static site on **GitHub Pages**.
-The root `index.html` is a landing hub that lists every entry as a card, grouped
-by category, with a client-side filter box and a live entry count.
+The root `index.html` is a landing hub that lists every entry as a flat list of
+cards (with the category shown as a small tag), plus a client-side filter box
+and a live entry count.
 
 🔗 **Live:** https://rijan08.github.io/desk/
 
@@ -10,26 +11,32 @@ by category, with a client-side filter box and a live entry count.
 
 ## Folder convention
 
+Docs are grouped on disk by **category folder**, and each doc gets its own
+**slug folder** containing a single `index.html`:
+
 ```
 desk/
-├─ index.html                    ← the hub (cards, filter, count)
-├─ .nojekyll                     ← tells Pages to serve files as-is (no Jekyll)
+├─ index.html                              ← the hub (flat card list, filter, count)
+├─ .nojekyll                               ← serve files as-is (no Jekyll)
 ├─ README.md
-├─ react-native-roadmap/
-│  └─ index.html                 ← one doc per folder
-└─ mqtt-rider-app/
-   └─ index.html
+└─ learning/                               ← category folder
+   ├─ react-native-roadmap/
+   │  └─ index.html                        ← one doc per slug folder
+   └─ mqtt-rider-app/
+      └─ index.html
 ```
 
 **Rules**
 
-- **One folder per document.** The folder name is the URL slug — keep it
+- **Group by category folder.** The category becomes a lowercase folder:
+  `learning/`, `personal/`, `writing/`. The category is *not* a heading on the
+  landing page — it shows only as a tag on each card.
+- **One slug folder per document**, holding exactly one `index.html`. Keep slugs
   lowercase-with-hyphens (e.g. `react-native-roadmap`).
-- **Each folder holds exactly one `index.html`.** Because of that filename,
-  the doc is reachable at a **clean URL** with no `.html`:
-  `https://rijan08.github.io/desk/react-native-roadmap/`.
-- **Links never include `.html`.** Always link to the folder
-  (`href="react-native-roadmap"`), not the file.
+- Because the file is `index.html`, the doc is served at a **clean URL** with no
+  `.html`: `https://rijan08.github.io/desk/learning/react-native-roadmap/`.
+- **Links never include `.html`.** In the hub, an entry's `url` is
+  `<category-folder>/<slug>` — e.g. `learning/react-native-roadmap`.
 - `.nojekyll` (an empty file at the root) must stay — without it GitHub Pages
   runs Jekyll and may hide or mangle files.
 
@@ -39,15 +46,15 @@ desk/
 
 There are two parts to every entry:
 
-1. a folder with an `index.html` (the document itself), and
+1. a `category/slug/index.html` (the document itself), and
 2. a card in the hub so it shows up on the landing page.
 
 ### A. Via git (from a computer)
 
 ```bash
-# 1. create the folder + document
-mkdir my-new-doc
-cp some-document.html my-new-doc/index.html   # filename MUST be index.html
+# 1. create the category folder (if new) + slug folder + document
+mkdir -p learning/my-new-doc
+cp some-document.html learning/my-new-doc/index.html   # filename MUST be index.html
 
 # 2. register it in the hub: open index.html and add an object to the
 #    ENTRIES array (see the template below)
@@ -67,28 +74,28 @@ You never need a terminal — everything below is doable in the browser/app.
 **Create the document**
 
 1. Go to the repo → **Add file ▸ Create new file**.
-2. In the filename box, type the folder and file together:
-   `my-new-doc/index.html` — typing `/` creates the folder for you.
+2. In the filename box, type the full path — typing `/` creates each folder:
+   `learning/my-new-doc/index.html`
 3. Paste your HTML into the editor.
 4. **Commit changes** (commit straight to `main`).
 
 > Pasting long HTML on a phone is fiddly — alternatively use
-> **Add file ▸ Upload files**, then drag/upload the file once it's named
-> `index.html` inside the right folder.
+> **Add file ▸ Upload files**, then make sure the uploaded file ends up named
+> `index.html` inside `learning/my-new-doc/`.
 
 **Register the card in the hub**
 
 5. Open `index.html` at the repo root → tap the ✏️ **pencil** to edit.
-6. Find the `ENTRIES` array near the bottom and add one object:
+6. Find the `ENTRIES` array and add one object:
 
    ```js
    {
-     category: "Learning",          // "Learning" or "Personal" (or "Writing" once enabled)
+     category: "Learning",                 // shown as the card tag
      title: "My New Doc",
-     url: "my-new-doc",             // the folder name — NO trailing slash, NO .html
+     url: "learning/my-new-doc",           // <category-folder>/<slug> — no trailing .html
      desc: "One-line description shown on the card.",
-     accent: "violet",              // teal | amber | violet | rose
-     tags: ["topic", "another"]     // shown as little chips; also searchable
+     accent: "violet",                     // tag colour: teal | amber | violet | rose
+     tags: ["topic", "another"]            // not shown, but included in search
    },
    ```
 
@@ -99,17 +106,15 @@ You never need a terminal — everything below is doable in the browser/app.
 
 ## Categories
 
-Categories are driven by the `CATEGORIES` array in `index.html`:
+Categories are just labels + folders — pick whatever you like; common ones:
 
-```js
-const CATEGORIES = ["Learning", "Personal"];
-```
+- **Learning** → `learning/`
+- **Personal** → `personal/`
+- **Writing** → `writing/`
 
-- A category listed here always renders its heading, even with zero entries
-  (it shows a muted “Nothing here yet.”).
-- A **Writing** section is scaffolded but commented out — enable it later by
-  uncommenting the `CATEGORIES.push("Writing")` line and tagging entries with
-  `category: "Writing"`.
+Set the `category` field on the entry (it renders as the card's tag) and put the
+doc under the matching lowercase folder. New categories need no config — the
+landing page is a single flat list and doesn't group by category.
 
 ---
 
