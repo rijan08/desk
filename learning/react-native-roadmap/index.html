@@ -49,7 +49,10 @@
   .toc{font-family:var(--mono);}
   .toc-inner{position:fixed;top:0;left:0;width:288px;height:100vh;overflow-y:auto;
     padding:30px 22px;border-right:1px solid var(--line);background:rgba(243,237,224,.78);backdrop-filter:blur(8px);}
-  .toc summary{display:none;}
+  /* mobile drawer controls (hidden on desktop) */
+  #menu-btn{display:none;position:fixed;top:14px;left:14px;z-index:55;background:var(--ink);color:var(--bg);
+    border:none;border-radius:10px;width:46px;height:46px;font-size:20px;cursor:pointer;box-shadow:0 6px 18px -6px rgba(0,0,0,.5);}
+  .scrim{display:none;position:fixed;inset:0;background:rgba(20,18,14,.45);z-index:50;}
   .toc-brand{font-family:var(--serif);font-size:18px;color:var(--ink);letter-spacing:.2px;margin-bottom:4px;line-height:1.25;}
   .toc-brand b{color:var(--amber);font-weight:600;}
   .toc-sub{font-size:11px;color:var(--ink-faint);letter-spacing:.5px;text-transform:uppercase;margin-bottom:22px;}
@@ -145,28 +148,28 @@
 
   @media(max-width:1000px){
     .layout{grid-template-columns:1fr;}
-    .toc-inner{position:sticky;top:0;width:auto;height:auto;border-right:none;border-bottom:1px solid var(--line);}
-    .toc summary{display:block;font-family:var(--mono);font-size:12px;letter-spacing:1px;color:var(--amber);cursor:pointer;padding:4px 0;text-transform:uppercase;}
-    .toc nav{margin-top:14px;}
-    .hero{padding:48px 0 32px;}
-  }
-  @media(min-width:1001px){
-    .toc details{open:true;}
-    .toc nav{display:block!important;}
+    .toc-inner{width:300px;border-right:1px solid var(--line);background:var(--bg);backdrop-filter:none;
+      transform:translateX(-105%);transition:transform .28s ease;z-index:54;box-shadow:10px 0 40px -20px rgba(0,0,0,.5);}
+    .toc-inner.open{transform:none;}
+    .scrim.open{display:block;}
+    #menu-btn{display:block;}
+    .main{padding-top:8px;}
+    .wrap{padding:0 18px;}
+    .hero{padding:60px 0 32px;}
   }
 </style>
 </head>
 <body>
+<button id="menu-btn" aria-label="Toggle contents">☰</button>
+<div class="scrim" id="scrim"></div>
 <div class="layout">
 
   <!-- SIDEBAR -->
   <aside class="toc">
-    <div class="toc-inner">
+    <div class="toc-inner" id="sidebar">
       <div class="toc-brand">React Native <b>Mastery</b> Roadmap</div>
       <div class="toc-sub">Personalized · v1</div>
-      <details open>
-        <summary>Contents</summary>
-        <nav id="toc-nav">
+      <nav id="toc-nav">
           <a href="#how">How to use this</a>
           <a href="#diagnosis">Your diagnosis</a>
           <a href="#phases">Phase sequencing</a>
@@ -192,7 +195,6 @@
           <a href="#plans">Study plans</a>
           <a href="#final">Final note</a>
         </nav>
-      </details>
     </div>
   </aside>
 
@@ -772,6 +774,15 @@
     });
   },{rootMargin:'-15% 0px -75% 0px',threshold:0});
   Object.keys(map).forEach(id=>{const el=document.getElementById(id);if(el)obs.observe(el);});
+
+  // mobile drawer toggle
+  const menuBtn=document.getElementById('menu-btn');
+  const sidebar=document.getElementById('sidebar');
+  const scrim=document.getElementById('scrim');
+  const setMenu=(open)=>{sidebar.classList.toggle('open',open);scrim.classList.toggle('open',open);};
+  menuBtn.addEventListener('click',()=>setMenu(!sidebar.classList.contains('open')));
+  scrim.addEventListener('click',()=>setMenu(false));
+  links.forEach(a=>a.addEventListener('click',()=>setMenu(false)));
 </script>
 </body>
 </html>
