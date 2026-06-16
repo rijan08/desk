@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MQTT for a Production React Native Rider App — Field Manual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/base16/gruvbox-dark-medium.min.css">
+<style>
+  :root{
+    --paper:#f3ede0;
+    --paper-2:#ece4d3;
+    --ink:#1a1712;
+    --ink-soft:#3b3528;
+    --muted:#7a6f5c;
+    --line:#d8cdb6;
+    --line-strong:#c3b596;
+    --rust:#c2451d;
+    --rust-deep:#9b3414;
+    --teal:#1c5e60;
+    --code-bg:#1c1a16;
+    --code-bar:#272420;
+    --maxw:840px;
+    --side:288px;
+    --r:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background-color:var(--paper);
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(120,105,75,.18) 1px, transparent 0);
+    background-size:26px 26px;
+    color:var(--ink);
+    font-family:"Hanken Grotesk", system-ui, sans-serif;
+    font-size:17px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  /* ---- progress bar ---- */
+  #progress{position:fixed;top:0;left:0;height:3px;width:0;background:var(--rust);z-index:60;transition:width .08s linear;box-shadow:0 0 12px rgba(194,69,29,.6)}
+  /* ---- layout ---- */
+  .shell{display:grid;grid-template-columns:var(--side) 1fr;align-items:start;max-width:1320px;margin:0 auto}
+  /* ---- sidebar ---- */
+  aside{
+    position:sticky;top:0;height:100vh;overflow-y:auto;
+    padding:36px 26px 60px;border-right:1px solid var(--line);
+  }
+  aside::-webkit-scrollbar{width:8px}
+  aside::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:8px}
+  .brand{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--rust);display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .brand .pulse{width:8px;height:8px;border-radius:50%;background:var(--rust);box-shadow:0 0 0 0 rgba(194,69,29,.5);animation:pulse 2.4s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(194,69,29,.5)}70%{box-shadow:0 0 0 10px rgba(194,69,29,0)}100%{box-shadow:0 0 0 0 rgba(194,69,29,0)}}
+  .brand-sub{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:21px;line-height:1.1;margin:0 0 26px;letter-spacing:-.01em}
+  nav .toc-label{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  nav ol{list-style:none;margin:0;padding:0;counter-reset:toc}
+  nav li{counter-increment:toc;margin:1px 0}
+  nav a{
+    display:flex;gap:11px;align-items:baseline;
+    text-decoration:none;color:var(--ink-soft);
+    font-size:14.5px;line-height:1.35;padding:7px 10px 7px 8px;border-radius:9px;
+    transition:background .15s,color .15s;
+  }
+  nav a .num{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);min-width:18px;font-weight:500;padding-top:2px}
+  nav a:hover{background:var(--paper-2);color:var(--ink)}
+  nav a.active{background:var(--ink);color:var(--paper)}
+  nav a.active .num{color:var(--rust)}
+  .side-foot{margin-top:30px;padding-top:18px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);font-family:"JetBrains Mono",monospace;line-height:1.6}
+  /* ---- main ---- */
+  main{min-width:0;padding:0 clamp(20px,5vw,64px) 120px}
+  article{max-width:var(--maxw);margin:0 auto}
+  /* ---- hero ---- */
+  .hero{padding:64px 0 30px;border-bottom:2px solid var(--ink);margin-bottom:8px;position:relative}
+  .hero .eyebrow{font-family:"JetBrains Mono",monospace;font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--rust);display:flex;align-items:center;gap:9px;margin-bottom:20px}
+  .hero .eyebrow .dot{width:7px;height:7px;background:var(--rust);border-radius:50%}
+  .hero h1{
+    font-family:"Bricolage Grotesque",sans-serif;font-weight:800;
+    font-size:clamp(34px,5.4vw,56px);line-height:1.02;letter-spacing:-.025em;margin:0;
+    color:var(--ink);
+  }
+  .hero h1 .accent{color:var(--rust)}
+  .hero .sig{display:flex;gap:4px;margin-top:26px;align-items:flex-end;height:26px}
+  .hero .sig span{width:5px;background:var(--line-strong);border-radius:2px;animation:eq 1.8s ease-in-out infinite}
+  .hero .sig span:nth-child(1){height:40%;animation-delay:0s;background:var(--rust)}
+  .hero .sig span:nth-child(2){height:90%;animation-delay:.2s}
+  .hero .sig span:nth-child(3){height:55%;animation-delay:.4s;background:var(--rust)}
+  .hero .sig span:nth-child(4){height:100%;animation-delay:.1s}
+  .hero .sig span:nth-child(5){height:30%;animation-delay:.5s}
+  .hero .sig span:nth-child(6){height:70%;animation-delay:.3s;background:var(--rust)}
+  .hero .sig span:nth-child(7){height:48%;animation-delay:.6s}
+  @keyframes eq{0%,100%{transform:scaleY(.7);opacity:.7}50%{transform:scaleY(1);opacity:1}}
+  .reveal{opacity:0;transform:translateY(14px);animation:rise .7s cubic-bezier(.2,.7,.2,1) forwards}
+  .reveal.d1{animation-delay:.05s}.reveal.d2{animation-delay:.15s}.reveal.d3{animation-delay:.25s}
+  @keyframes rise{to{opacity:1;transform:none}}
+  /* ---- headings ---- */
+  article h2{
+    font-family:"Bricolage Grotesque",sans-serif;font-weight:800;
+    font-size:clamp(25px,3.4vw,34px);line-height:1.12;letter-spacing:-.02em;
+    margin:72px 0 4px;padding-top:26px;border-top:1px solid var(--line);
+    scroll-margin-top:24px;position:relative;
+  }
+  article h2::after{content:"";display:block;width:46px;height:4px;background:var(--rust);border-radius:3px;margin-top:16px}
+  article h3{
+    font-family:"Bricolage Grotesque",sans-serif;font-weight:700;
+    font-size:21px;letter-spacing:-.01em;margin:42px 0 8px;scroll-margin-top:24px;color:var(--ink)
+  }
+  article h4{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:16.5px;margin:30px 0 6px;color:var(--ink-soft)}
+  /* ---- text ---- */
+  article p{margin:14px 0}
+  article strong{font-weight:700;color:var(--ink)}
+  article a{color:var(--rust-deep);text-decoration:none;border-bottom:1px solid var(--line-strong);transition:border-color .15s,color .15s}
+  article a:hover{color:var(--rust);border-color:var(--rust)}
+  article ul,article ol{margin:14px 0;padding-left:1.3em}
+  article li{margin:7px 0}
+  article li::marker{color:var(--rust)}
+  /* checklist */
+  article li:has(> input[type=checkbox]){list-style:none;margin-left:-1.3em;padding-left:0;display:flex;gap:11px;align-items:flex-start}
+  article input[type=checkbox]{appearance:none;-webkit-appearance:none;width:19px;height:19px;border:2px solid var(--line-strong);border-radius:5px;background:var(--paper);margin-top:5px;flex:0 0 auto;position:relative}
+  article input[type=checkbox]:checked{background:var(--rust);border-color:var(--rust)}
+  article input[type=checkbox]:checked::after{content:"✓";position:absolute;color:var(--paper);font-size:13px;font-weight:700;left:2px;top:-3px}
+  /* ---- callouts (blockquote) ---- */
+  article blockquote{
+    margin:24px 0;padding:18px 22px 18px 22px;border-radius:var(--r);
+    background:var(--paper-2);border:1px solid var(--line);border-left:4px solid var(--muted);
+    position:relative;
+  }
+  article blockquote p{margin:6px 0}
+  article blockquote::before{
+    content:attr(data-label);position:absolute;top:-10px;left:16px;
+    font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+    background:var(--muted);color:var(--paper);padding:2px 9px;border-radius:20px;
+  }
+  article blockquote.accent{background:linear-gradient(0deg,rgba(194,69,29,.05),rgba(194,69,29,.05)),var(--paper);border-left-color:var(--rust)}
+  article blockquote.accent::before{background:var(--rust)}
+  article blockquote.danger{border-left-color:#a31515;background:linear-gradient(0deg,rgba(163,21,21,.05),rgba(163,21,21,.05)),var(--paper)}
+  article blockquote.danger::before{content:"⚠ Danger";background:#a31515}
+  article blockquote.critical{border:2px solid var(--ink);border-left:6px solid var(--rust);background:var(--ink);color:var(--paper)}
+  article blockquote.critical strong{color:#fff}
+  article blockquote.critical::before{content:"★ Read this first";background:var(--rust);color:#fff;top:-11px}
+  article blockquote.critical a{color:var(--paper);border-color:rgba(255,255,255,.4)}
+  /* ---- tables ---- */
+  .table-wrap{overflow-x:auto;margin:22px 0;border:1px solid var(--line);border-radius:var(--r);background:var(--paper)}
+  article table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:520px}
+  article th{background:var(--ink);color:var(--paper);font-family:"Bricolage Grotesque",sans-serif;font-weight:600;text-align:left;padding:12px 15px;letter-spacing:.01em;white-space:nowrap}
+  article td{padding:11px 15px;border-top:1px solid var(--line);vertical-align:top}
+  article tbody tr:nth-child(even){background:var(--paper-2)}
+  article td code{font-size:12.5px}
+  /* ---- code ---- */
+  article code{font-family:"JetBrains Mono",monospace;font-size:.86em;background:rgba(194,69,29,.1);color:var(--rust-deep);padding:.14em .42em;border-radius:5px;border:1px solid rgba(194,69,29,.16)}
+  article pre{margin:22px 0;border-radius:var(--r);overflow:hidden;border:1px solid #000;box-shadow:0 10px 30px -16px rgba(0,0,0,.4)}
+  article pre.code-block{position:relative;background:var(--code-bg)}
+  article pre.code-block::before{
+    content:attr(data-lang);display:block;
+    font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:#b8ab8f;background:var(--code-bar);padding:9px 16px;border-bottom:1px solid #000;
+  }
+  article pre.code-block code{display:block;padding:18px 18px 20px;overflow-x:auto;background:transparent;border:none;color:#ebdbb2;font-size:13.3px;line-height:1.62;border-radius:0}
+  article pre.code-block code.hljs{background:transparent;padding:18px}
+  /* mermaid */
+  .mermaid{margin:26px 0;padding:24px;background:var(--paper);border:1px solid var(--line-strong);border-radius:var(--r);text-align:center;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted)}
+  .mermaid svg{max-width:100%;height:auto}
+  /* hr */
+  article hr{border:none;height:1px;background:var(--line);margin:54px 0}
+  /* mobile sidebar */
+  #menu-btn{display:none;position:fixed;top:14px;left:14px;z-index:55;background:var(--ink);color:var(--paper);border:none;border-radius:10px;width:46px;height:46px;font-size:20px;cursor:pointer;box-shadow:0 6px 18px -6px rgba(0,0,0,.5)}
+  .scrim{display:none;position:fixed;inset:0;background:rgba(20,18,14,.45);z-index:50}
+  @media(max-width:980px){
+    .shell{grid-template-columns:1fr}
+    aside{position:fixed;left:0;top:0;width:300px;background:var(--paper);z-index:54;transform:translateX(-105%);transition:transform .28s ease;box-shadow:10px 0 40px -20px rgba(0,0,0,.5)}
+    aside.open{transform:none}
+    .scrim.open{display:block}
+    #menu-btn{display:block}
+    main{padding-top:70px}
+  }
+  @media print{
+    aside,#menu-btn,#progress,.scrim,.hero .sig{display:none}
+    .shell{display:block}
+    body{background:#fff}
+    article pre,article .table-wrap{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<button id="menu-btn" aria-label="Toggle contents">☰</button>
+<div class="scrim" id="scrim"></div>
+<div class="shell">
+  <aside id="sidebar">
+    <div class="brand"><span class="pulse"></span>Field Manual</div>
+    <div class="brand-sub">MQTT for a<br>Rider App</div>
+    <nav>
+      <div class="toc-label">Contents</div>
+      <ol id="toc"></ol>
+    </nav>
+    <div class="side-foot">v1 · RN + TS + Redux<br>AWS IoT Core · 2026<br>~4–5 hr POC build</div>
+  </aside>
+  <main>
+    <article id="content">
+<header class="hero"><div class="eyebrow reveal"><span class="dot"></span>Engineering Field Manual · Real-Time Systems</div><h1 id="top" class="reveal d1"><span class="accent">MQTT</span> for a Production React Native Rider App — Staff-Engineer Implementation Guide</h1><div class="sig reveal d2"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></header><blockquote class="critical"><p>Audience: SDE1 on a RN rider/delivery app (TypeScript + Redux). You have ~45 min to learn, ~4–5 hrs to build a POC, AWS IoT Core access, and the option of a Node backend.</p>
+<p><strong>The single most important thing in this whole doc:</strong> MQTT gives you <em>real-time delivery while the app is alive and connected</em>. It does <strong>not</strong> reliably wake a backgrounded or killed app on iOS/Android. Killed-app order assignment <strong>must</strong> go through FCM/APNs. MQTT and push are complementary, not competing. Internalize this before you write a line of code — most &quot;MQTT in mobile&quot; disasters come from teams expecting MQTT to replace push.</p>
+</blockquote><hr>
+<h3 id="how-to-spend-your-time-read-this-first">How to spend your time (read this first)</h3><table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Time</th>
+<th>What you actually get</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Crash course (§1)</td>
+<td>30–40 min</td>
+<td>Enough mental model to make correct decisions</td>
+</tr>
+<tr>
+<td>AWS IoT setup (§3, §5)</td>
+<td>45 min</td>
+<td>A working cloud broker with auth</td>
+</tr>
+<tr>
+<td>RN service layer (§4)</td>
+<td>90 min</td>
+<td>Reusable, typed, singleton MQTT service + Redux wiring</td>
+</tr>
+<tr>
+<td>Backend publisher (§5)</td>
+<td>30 min</td>
+<td>Node script that &quot;assigns orders&quot;</td>
+</tr>
+<tr>
+<td>Wire end-to-end + test (§5, §6)</td>
+<td>60 min</td>
+<td>Receive a live order on the device, ACK it</td>
+</tr>
+<tr>
+<td>Buffer / debugging</td>
+<td>30 min</td>
+<td>MQTTX, CloudWatch, reconnect testing</td>
+</tr>
+</tbody></table>
+<p><strong>MUST-HAVE in 4–5 hrs:</strong> connect → subscribe → receive a mock order → ACK → survive a reconnect.
+<strong>GOOD-TO-HAVE:</strong> location publish, presence/LWT, feature flag, Redux selectors.
+<strong>PRODUCTION FUTURE WORK:</strong> native TCP client for battery, custom-authorizer JWT, FCM fallback, observability, reconnect-storm protection.</p>
+<hr>
+<h2 id="1-mqtt-crash-course-focused">1. MQTT Crash Course (Focused)</h2><h3 id="what-mqtt-actually-is">What MQTT actually is</h3><p>MQTT is a lightweight <strong>publish/subscribe</strong> messaging protocol over a long-lived TCP connection (or WebSocket). Instead of clients calling each other, everyone talks to a central <strong>broker</strong>. Publishers send messages to a <strong>topic</strong> (a string path); subscribers register interest in topic patterns and the broker fans messages out to them.</p>
+<p>The mental model that matters:</p>
+<pre class="code-block" data-lang="text"><code class="language-text">                          ┌───────────────┐
+  publish &quot;order&quot;  ─────▶ │               │ ─────▶ subscriber A (rider app)
+  (backend)               │    BROKER     │ ─────▶ subscriber B (ops dashboard)
+  publish &quot;location&quot; ───▶ │  (router)     │ ─────▶ subscriber C (tracking svc)
+  (rider app)             └───────────────┘</code></pre><p>Nobody knows about anybody else. The broker is the only thing everyone connects to. This decoupling is the entire point: you can add a new consumer (analytics, a live map) without touching the publisher.</p>
+<p>Two properties make it good for mobile:</p>
+<ul>
+<li><strong>One persistent connection</strong> carries unlimited topics in both directions. You don&#39;t open a connection per &quot;feature.&quot;</li>
+<li><strong>Tiny framing.</strong> A PUBLISH packet has ~2–4 bytes of fixed overhead. Compare to an HTTP request&#39;s headers. On a flaky 3G rider phone this is the difference between working and not.</li>
+</ul>
+<h3 id="why-deliveryrider-apps-use-it">Why delivery/rider apps use it</h3><p>A rider app needs the <strong>server to push to the device</strong> the instant something happens (new order, reassignment, cancellation), and the device to <strong>stream to the server</strong> continuously (GPS). HTTP polling is the naive solution and it&#39;s terrible here: you either poll fast (battery + server load + cost) or poll slow (latency). MQTT inverts it — the connection stays open, server pushes when it has something, device pushes GPS on the same pipe. Low battery, low bytes, low latency. That&#39;s the whole pitch.</p>
+<h3 id="mqtt-vs-websockets-vs-fcm-vs-polling">MQTT vs WebSockets vs FCM vs Polling</h3><p>This is the decision table you&#39;ll get asked about in design review:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Server→device push</th>
+<th>Device→server stream</th>
+<th>Works when app killed</th>
+<th>Battery</th>
+<th>Bytes/overhead</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Polling (HTTP)</strong></td>
+<td>❌ (latency = interval)</td>
+<td>✅</td>
+<td>❌</td>
+<td>Bad</td>
+<td>High</td>
+<td>Trivial</td>
+</tr>
+<tr>
+<td><strong>WebSocket</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>You build pub/sub, QoS, reconnect yourself</td>
+</tr>
+<tr>
+<td><strong>FCM/APNs (push)</strong></td>
+<td>✅</td>
+<td>❌</td>
+<td>✅ (the <em>only</em> one)</td>
+<td>Great</td>
+<td>Low</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><strong>MQTT</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>Good</td>
+<td>Lowest</td>
+<td>Library handles QoS/reconnect/sessions</td>
+</tr>
+</tbody></table>
+<p>The honest summary:</p>
+<ul>
+<li><strong>WebSocket</strong> is a raw bidirectional pipe. MQTT is <em>a protocol on top of that idea</em> that already solved topics, QoS, sessions, retained messages, last-will, and reconnect semantics. Choosing raw WebSocket means re-implementing MQTT badly. (Note: MQTT can itself <em>run over</em> WebSocket — see §4.)</li>
+<li><strong>FCM/APNs</strong> is the only transport that reaches a killed app, but it&#39;s best-effort, rate-limited, not ordered, and high-latency for high-frequency data. You cannot stream GPS over it. You <strong>must</strong> have it anyway for killed-app wakeups.</li>
+<li><strong>MQTT</strong> is your foreground real-time workhorse. <strong>FCM is your safety net.</strong> Production rider apps run both.</li>
+</ul>
+<h3 id="brokers">Brokers</h3><p>The broker is the server that routes. You don&#39;t write it; you run one or rent one. For you: <strong>AWS IoT Core</strong> (managed broker, you have access — use it). Self-host alternatives: <strong>Mosquitto</strong> (tiny, great for local dev, single-node), <strong>EMQX</strong> (clustered, millions of connections, production-grade), <strong>HiveMQ</strong> (enterprise). More in §6.</p>
+<h3 id="topics">Topics</h3><p>A topic is a UTF-8 string with <code>/</code> separators, e.g. <code>driver/123/orders</code>. There&#39;s no registration — you publish to a topic and it exists. Design topics like a URL hierarchy. <strong>Topic structure is your API surface; get it right early (see §2).</strong></p>
+<p>Rules: no leading <code>/</code>, don&#39;t start segments with <code>$</code> (reserved — AWS uses <code>$aws/...</code>), keep them reasonably short (they&#39;re sent on every message and AWS meters payload in 5KB chunks).</p>
+<h3 id="publishers-subscribers">Publishers / subscribers</h3><p>Same client can be both. Your rider app <strong>subscribes</strong> to <code>driver/123/orders</code> (to receive assignments) and <strong>publishes</strong> to <code>driver/123/location</code> (to stream GPS). Your backend does the inverse. Roles are per-topic, not per-connection.</p>
+<h3 id="qos-0-1-2-the-one-youll-think-about-most">QoS 0 / 1 / 2 — the one you&#39;ll think about most</h3><p>Quality of Service = delivery guarantee, chosen <strong>per publish</strong> and capped by the subscription&#39;s QoS.</p>
+<ul>
+<li><strong>QoS 0 — at most once (&quot;fire and forget&quot;).</strong> No ack, no retry. If the connection blips, the message is gone. Use for <strong>GPS location pings</strong> — losing one is fine, the next one is 3 seconds away.</li>
+<li><strong>QoS 1 — at least once.</strong> Broker retries until it gets a PUBACK. <strong>Can deliver duplicates.</strong> Use for <strong>order assignment, cancellation, status changes</strong> — you must not lose these. <em>You handle dedup yourself</em> (see §7).</li>
+<li><strong>QoS 2 — exactly once.</strong> 4-packet handshake, slowest, most state. Almost never worth it on mobile. <strong>AWS IoT Core does not support QoS 2 at all</strong> — it caps at QoS 1. So this decision is made for you: <strong>QoS 1 + idempotency.</strong></li>
+</ul>
+<blockquote class="accent" data-label="Decision"><p>Decision: <strong>QoS 1 for everything order-related, QoS 0 for telemetry.</strong> Build dedup by <code>orderId</code>/<code>messageId</code> and you&#39;ve effectively got exactly-once at the application layer, which is the correct production pattern anyway.</p>
+</blockquote><h3 id="retained-messages">Retained messages</h3><p>A retained message is &quot;the last value, kept by the broker.&quot; When set, any <em>new</em> subscriber to that topic immediately gets the last retained message without waiting for a fresh publish. Use case: <code>driver/123/status</code> retains <code>online</code>/<code>offline</code> so a dashboard subscribing later sees current state instantly.</p>
+<blockquote class="danger"><p><strong>Danger for orders:</strong> never retain an order assignment. A rider reconnecting hours later would receive a stale &quot;new order&quot; as if it just arrived. Retained + orders = ghost orders. Retain <em>state</em>, never <em>events</em>. (More in §7.)</p>
+</blockquote><h3 id="last-will-and-testament-lwt">Last Will and Testament (LWT)</h3><p>When you connect, you can register a &quot;will&quot; message: <em>&quot;if I disconnect ungracefully, broker, please publish THIS for me.&quot;</em> Classic use: will = publish <code>offline</code> (retained) to <code>driver/123/status</code>. If the rider&#39;s phone dies or loses signal, the broker detects the dead connection (via keep-alive timeout) and announces them offline automatically. This is how you get reliable presence without the device having to send a goodbye.</p>
+<h3 id="sessions-clean-vs-persistent">Sessions (clean vs persistent)</h3><ul>
+<li><strong>Clean session (<code>cleanStart: true</code> / <code>cleanSession</code>):</strong> broker forgets everything on disconnect — subscriptions and queued messages gone. Fresh start each connect.</li>
+<li><strong>Persistent session (<code>cleanStart: false</code> + a stable <code>clientId</code> + <code>sessionExpiryInterval</code>):</strong> broker <strong>remembers your subscriptions</strong> and <strong>queues QoS-1 messages while you&#39;re offline</strong>, redelivering on reconnect.</li>
+</ul>
+<blockquote data-label="Note"><p>For a rider app: <strong>persistent session</strong> so an order published during a 10-second tunnel disconnect still reaches the rider on reconnect. On AWS IoT Core, queued QoS-1 messages drain at <strong>10 messages/sec</strong> on reconnect. The catch: a stable <code>clientId</code> per device, and exactly one connection per clientId (a second connect with the same clientId kicks the first — see reconnect storms in §7).</p>
+</blockquote><h3 id="keep-alive">Keep-alive</h3><p>A timer (e.g. 30–60s). If the client sends nothing for that long, it sends a tiny <strong>PINGREQ</strong>; broker replies <strong>PINGRESP</strong>. This (a) keeps NAT/firewall holes open and (b) lets the broker detect dead clients (miss 1.5× keep-alive → broker declares you dead and fires your LWT). Shorter keep-alive = faster dead-client detection but more radio wakeups = more battery. <strong>30–60s is the mobile sweet spot.</strong> AWS IoT Core supports up to 1200s; on a metered/battery-sensitive rider phone, ~50s is reasonable.</p>
+<h3 id="reconnects">Reconnects</h3><p>Connections <em>will</em> drop on mobile — tunnels, elevators, network handoffs, OS throttling. The library reconnects, but <strong>you</strong> own the policy: exponential backoff + jitter, cap the delay, re-subscribe (unless persistent session restores subscriptions), and flush any queued outbound publishes. A naive &quot;reconnect immediately in a tight loop&quot; across a fleet is how you DDoS your own broker (§7).</p>
+<h3 id="persistent-connections">Persistent connections</h3><p>The TCP/TLS connection stays open between messages. Benefit: zero per-message setup cost, instant push. Cost: the radio can&#39;t fully sleep, and the OS may kill the socket in background. This is the core tension on mobile and the reason §7 exists.</p>
+<h3 id="wildcard-topics-subscriptions-only">Wildcard topics (subscriptions only)</h3><ul>
+<li><code>+</code> = single level. <code>driver/+/location</code> matches <code>driver/123/location</code> and <code>driver/999/location</code>, not <code>driver/123/orders</code>.</li>
+<li><code>#</code> = multi-level, must be last. <code>driver/123/#</code> matches everything under that driver.</li>
+</ul>
+<p>Wildcards are <strong>subscribe-only</strong> (you never publish to a wildcard). The rider app subscribes to its <em>own</em> narrow topics. Wildcards are for backend consumers (e.g. a tracking service subscribing to <code>driver/+/location</code>).</p>
+<blockquote class="accent" data-label="Decision"><p><strong>Security note:</strong> never let a device subscribe to <code>driver/#</code> — that&#39;s every driver&#39;s data. Policy must scope each device to its own <code>driver/{thingName}/#</code> (§3).</p>
+</blockquote><h3 id="security-basics">Security basics</h3><ol>
+<li><strong>Transport:</strong> always TLS (port 8883 native, 443 for MQTT-over-WSS). Never plaintext 1883 in production.</li>
+<li><strong>AuthN (who are you):</strong> X.509 certs, or AWS SigV4 (Cognito), or a <strong>custom authorizer Lambda</strong> that validates your existing app JWT. For a per-user mobile app, the JWT-via-custom-authorizer path is cleanest (§3).</li>
+<li><strong>AuthZ (what can you touch):</strong> an IoT policy that restricts each device to its own topics, using policy variables like <code>${iot:Connection.Thing.ThingName}</code> so one policy scopes every device to itself.</li>
+</ol>
+<h3 id="mqtt-message-flow-the-full-handshake-qos-1">MQTT message flow (the full handshake, QoS 1)</h3><pre class="code-block" data-lang="text"><code class="language-text">CONNECT  ─────────────▶  broker validates auth + policy
+   ◀───────────── CONNACK (sessionPresent: true/false)
+
+SUBSCRIBE driver/123/orders (qos1) ─▶
+   ◀───────────── SUBACK
+
+           ... time passes, persistent connection idle ...
+PINGREQ ─▶   ◀─ PINGRESP        (keep-alive)
+
+(backend publishes an order)
+   ◀───────────── PUBLISH driver/123/orders {orderId, ...}
+PUBACK ─────────────▶            (you acked receipt at the MQTT layer)
+
+(app-level) PUBLISH driver/123/ack {orderId, accepted:true} ─▶</code></pre><p>Note the two layers of &quot;ack&quot;: the MQTT PUBACK (transport got it) and your <strong>application ack</strong> (rider tapped Accept). They&#39;re different. Transport delivery ≠ business acceptance.</p>
+<h3 id="real-riderorder-examples">Real rider/order examples</h3><ul>
+<li><strong>New order:</strong> backend → <code>driver/123/orders</code> (QoS1) → app shows the accept/reject modal with a countdown timer.</li>
+<li><strong>Rider accepts:</strong> app → <code>driver/123/ack</code> (QoS1) → backend confirms assignment, or reassigns on timeout.</li>
+<li><strong>Live tracking:</strong> app → <code>driver/123/location</code> (QoS0, every 3–5s) → backend rule routes to the customer&#39;s tracking view.</li>
+<li><strong>Cancellation:</strong> backend → <code>driver/123/orders/456/status</code> (QoS1, <strong>not</strong> retained) → app dismisses the order.</li>
+<li><strong>Presence:</strong> LWT → <code>driver/123/status</code> <code>offline</code> (retained); on connect publish <code>online</code> (retained).</li>
+</ul>
+<hr>
+<h2 id="2-architecture-for-my-use-case">2. Architecture for My Use Case</h2><h3 id="high-level-flow">High-level flow</h3><pre class="mermaid">flowchart LR
+    subgraph Device[Rider App]
+      RN[RN MqttService&lt;br/&gt;singleton]
+      FCMrx[FCM handler]
+    end
+    subgraph AWS[AWS IoT Core]
+      Broker[MQTT Broker]
+      Auth[Custom Authorizer&lt;br/&gt;Lambda - validates JWT]
+      Rules[Rules Engine]
+    end
+    subgraph Backend[Your Backend]
+      Assign[Order Assignment Svc]
+      Pub[IoT Data Publish&lt;br/&gt;HTTP API]
+      FCMsvc[FCM/APNs sender]
+      DB[(Orders DB)]
+    end
+
+    RN &lt;--&gt;|MQTT/WSS 443| Broker
+    Broker --&gt; Auth
+    Assign --&gt;|new order| Pub --&gt; Broker
+    Broker --&gt;|driver/ID/orders| RN
+    RN --&gt;|driver/ID/location QoS0| Broker
+    Broker --&gt; Rules --&gt; DB
+    Assign -.-&gt;|killed-app fallback| FCMsvc -.-&gt;|push| FCMrx
+    FCMrx -.-&gt;|app opens, MQTT reconnects| RN</pre><p>The dotted path is the fallback: assignment service publishes over MQTT <strong>and</strong> fires an FCM data/notification message. If the app is foreground+connected, MQTT wins (instant, in-app modal). If it&#39;s killed, FCM wakes it; on open, MQTT reconnects and the persistent session (or a fetch-on-resume) reconciles state.</p>
+<h3 id="topic-structure">Topic structure</h3><p>Design once, regret never. Convention: <code>domain/{id}/resource[/sub]</code>.</p>
+<pre class="code-block" data-lang="text"><code class="language-text">driver/{driverId}/orders                 # inbound: new assignment (QoS1)
+driver/{driverId}/orders/{orderId}/status# inbound: accepted/cancelled/picked/delivered (QoS1)
+driver/{driverId}/ack                     # outbound: rider&#39;s accept/reject (QoS1)
+driver/{driverId}/location                # outbound: GPS stream (QoS0)
+driver/{driverId}/status                  # presence, RETAINED (online/offline), LWT target
+driver/{driverId}/commands                # inbound: server pings, force-logout, config (QoS1)
+
+# backend-only consumers (wildcards, never used by the device):
+driver/+/location                         # tracking service
+driver/+/status                           # ops dashboard presence</code></pre><p>Why <code>driver/{id}/...</code> and not <code>orders/created</code>: it lets the IoT <strong>policy</strong> scope a device to <code>driver/${iot:Connection.Thing.ThingName}/#</code> so a device can <em>only</em> ever touch its own subtree. A flat <code>orders/created</code> topic would be visible to every device — a security hole. Keep the rider&#39;s <code>{id}</code> == its IoT thing name == its authenticated subject.</p>
+<h3 id="event-naming-strategy">Event naming strategy</h3><p>Topics carry <em>routing</em>; the payload carries the <em>event type</em>. Keep a discriminated union:</p>
+<pre class="code-block" data-lang="text"><code class="language-text">type = &quot;ORDER_ASSIGNED&quot; | &quot;ORDER_CANCELLED&quot; | &quot;ORDER_STATUS_CHANGED&quot; | &quot;FORCE_LOGOUT&quot; | &quot;CONFIG_UPDATE&quot;</code></pre><p>Don&#39;t encode every event as its own topic (topic explosion, §7). Few topics, typed payloads.</p>
+<h3 id="message-payload-examples">Message payload examples</h3><pre class="code-block" data-lang="jsonc"><code class="language-json">// driver/123/orders  (QoS1)
+{
+  &quot;type&quot;: &quot;ORDER_ASSIGNED&quot;,
+  &quot;messageId&quot;: &quot;msg_01H...&quot;,     // for dedup
+  &quot;orderId&quot;: &quot;ord_456&quot;,
+  &quot;ts&quot;: 1716960000000,
+  &quot;expiresAt&quot;: 1716960030000,    // accept window
+  &quot;pickup&quot;:  { &quot;lat&quot;: 13.04, &quot;lng&quot;: 80.24, &quot;name&quot;: &quot;Anna Nagar Kitchen&quot; },
+  &quot;drop&quot;:    { &quot;lat&quot;: 13.01, &quot;lng&quot;: 80.21, &quot;name&quot;: &quot;T. Nagar&quot; },
+  &quot;payout&quot;:  85.00,
+  &quot;distanceKm&quot;: 4.2
+}
+
+// driver/123/ack  (QoS1, app -&gt; server)
+{ &quot;type&quot;: &quot;ORDER_ACK&quot;, &quot;messageId&quot;: &quot;msg_01J...&quot;, &quot;orderId&quot;: &quot;ord_456&quot;, &quot;accepted&quot;: true, &quot;ts&quot;: 1716960012000 }
+
+// driver/123/location  (QoS0, high frequency)
+{ &quot;lat&quot;: 13.031, &quot;lng&quot;: 80.233, &quot;heading&quot;: 271, &quot;speed&quot;: 8.3, &quot;ts&quot;: 1716960005000 }</code></pre><p>Always include <code>messageId</code> (idempotency) and <code>ts</code>. Keep order payloads under 5KB (one AWS metering unit). For tracking, the customer-facing detail is fetched via the backend, not stuffed into the GPS ping.</p>
+<h3 id="auth-flow-recommended-for-mobile">Auth flow (recommended for mobile)</h3><pre class="code-block" data-lang="text"><code class="language-text">1. App logs in → your backend issues JWT (already exists in your app).
+2. App opens MQTT-over-WSS to AWS IoT, passing the JWT to a Custom Authorizer.
+3. Authorizer Lambda validates JWT → returns an IoT policy scoping the device
+   to driver/{sub}/# where sub == the user id from the token.
+4. Broker enforces that policy on every CONNECT/PUBLISH/SUBSCRIBE.</code></pre><p>This reuses your existing identity. No per-device certificate provisioning, no Cognito identity pool to babysit. (POC shortcut: Cognito or even a dev cert — §3.)</p>
+<h3 id="reconnect-strategy">Reconnect strategy</h3><pre class="code-block" data-lang="text"><code class="language-text">delay = min(maxDelay, base * 2^attempt) + random(0, jitter)
+base=1s, maxDelay=30s, jitter=±20%
+on success: reset attempt=0, re-subscribe (if clean session), flush outbound queue
+only reconnect while app is foreground (pause reconnects in background — §4/§7)</code></pre><h3 id="retry-strategy-application-level">Retry strategy (application level)</h3><ul>
+<li>Outbound order ACK (QoS1): library retries at MQTT layer; <em>also</em> keep it in an outbox until you observe a server confirmation, in case the whole connection died.</li>
+<li>Don&#39;t retry GPS (QoS0) — stale location is worthless.</li>
+</ul>
+<h3 id="qos-decisions-recap">QoS decisions (recap)</h3><table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>QoS</th>
+<th>Retained</th>
+<th>Session</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>orders / status / ack / commands</td>
+<td>1</td>
+<td>no</td>
+<td>persistent</td>
+</tr>
+<tr>
+<td>location</td>
+<td>0</td>
+<td>no</td>
+<td>—</td>
+</tr>
+<tr>
+<td>status (presence)</td>
+<td>1</td>
+<td><strong>yes</strong></td>
+<td>LWT</td>
+</tr>
+</tbody></table>
+<h3 id="offline-background-killed-behavior-the-honest-version">Offline / background / killed behavior (the honest version)</h3><ul>
+<li><strong>Foreground, connected:</strong> MQTT delivers instantly. Ideal.</li>
+<li><strong>Brief disconnect (tunnel):</strong> persistent session queues QoS1 orders; redelivered on reconnect (≤10/s on AWS).</li>
+<li><strong>App backgrounded:</strong> OS will throttle/suspend the socket within seconds–minutes. Treat backgrounded ≈ disconnected. <strong>Rely on FCM here.</strong></li>
+<li><strong>App killed:</strong> no MQTT, period. <strong>FCM/APNs is the only path.</strong> On tap/open, app cold-starts, reconnects MQTT, and reconciles (fetch active order via REST or read retained status).</li>
+</ul>
+<blockquote class="accent" data-label="Decision"><p>Architectural rule: <strong>MQTT for live foreground UX; push for delivery guarantees when not foreground; REST for reconciliation on resume.</strong> Three legs of the same stool.</p>
+</blockquote><h3 id="scalability-preview-full-detail-7">Scalability (preview, full detail §7)</h3><ul>
+<li>One connection per rider, scoped policy, few topics, typed payloads.</li>
+<li>Backend publishes via the <strong>IoT Data Plane HTTP <code>publish</code> API</strong> (stateless, scales horizontally) rather than holding a broker connection per backend instance.</li>
+<li>Use the <strong>Rules Engine / Basic Ingest</strong> to route inbound telemetry to DynamoDB/Kinesis without paying broker fan-out.</li>
+</ul>
+<hr>
+<h2 id="3-aws-iot-core-deep-dive">3. AWS IoT Core Deep Dive</h2><h3 id="is-aws-iot-core-a-good-fit">Is AWS IoT Core a good fit?</h3><p><strong>For your POC and early production: yes.</strong> You already have access, it&#39;s a fully managed MQTT broker (no servers to run), TLS by default, QoS 0/1, persistent sessions, LWT, retained messages, fine-grained policies, and a Rules Engine to route data into the rest of AWS. Free tier (12 months) easily covers a POC.</p>
+<p><strong>Caveats that will matter later:</strong></p>
+<ul>
+<li><strong>No QoS 2.</strong> Fine — you&#39;re on QoS 1 + idempotency anyway.</li>
+<li><strong>Per-connection limits:</strong> 100 messages/sec or 512 KB/s per connection; <strong>50 subscriptions per session</strong>; max 8 topics per SUBSCRIBE call. A rider only needs a handful of subscriptions, so this is comfortable — but a <em>backend</em> fan-in consumer is not supposed to subscribe to everything; use Rules instead.</li>
+<li><strong>Account defaults:</strong> ~10,000 inbound and ~20,000 outbound publishes/sec, ~500 connects/sec (raise via Service Quotas). Connect rate matters during reconnect storms (§7).</li>
+<li><strong>Cost grows with message volume</strong> — it&#39;s metered (next section). At &quot;lakhs of riders streaming GPS,&quot; IoT Core can get expensive; that&#39;s when teams evaluate self-managed EMQX. For now it&#39;s the right call.</li>
+</ul>
+<h3 id="architecture-using-aws-iot-core">Architecture using AWS IoT Core</h3><p>Device ⇄ (MQTT/WSS 443) ⇄ IoT Core broker. Custom Authorizer validates JWT. <strong>Rules Engine</strong> subscribes to telemetry topics server-side and routes to DynamoDB (order state), Kinesis (location stream), Lambda (assignment logic), SNS. Backend publishes order assignments via the <strong>IoT Data Plane <code>publish</code> HTTP API</strong>.</p>
+<h3 id="auth-options-compared">Auth options compared</h3><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>How</th>
+<th>Best for</th>
+<th>Pain</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>X.509 certificates</strong></td>
+<td>Per-device cert, mutual TLS</td>
+<td>Fixed IoT hardware</td>
+<td>Provisioning + rotating certs for <em>millions of phones</em> is miserable; certs in app storage are exfiltratable</td>
+</tr>
+<tr>
+<td><strong>Cognito (SigV4)</strong></td>
+<td>Identity pool → temp AWS creds → signed WSS URL</td>
+<td>Fastest POC</td>
+<td>Another identity system to run alongside your existing auth</td>
+</tr>
+<tr>
+<td><strong>Custom Authorizer (Lambda + your JWT)</strong></td>
+<td>App passes existing JWT; Lambda returns a scoped policy</td>
+<td><strong>Production mobile</strong></td>
+<td>You write/maintain a Lambda</td>
+</tr>
+</tbody></table>
+<blockquote class="accent" data-label="Decision"><p><strong>POC:</strong> Cognito unauthenticated/authenticated pool — fastest to a green connection.
+<strong>Production:</strong> Custom Authorizer reusing your app&#39;s JWT — one identity system, per-user scoping, instant revocation by failing the token.</p>
+</blockquote><h3 id="easiest-setup-for-poc-do-this-today">Easiest setup for POC (do this today)</h3><p>For the absolute fastest &quot;device connects&quot; moment, you can even start with a <strong>certificate</strong> generated in-console (5 clicks) and a permissive dev policy, prove the pipe works, then swap auth for Cognito/custom authorizer. Don&#39;t ship the permissive policy.</p>
+<h3 id="device-identity-strategy">Device identity strategy</h3><ul>
+<li><strong>Thing name == your internal driverId</strong> (or a stable device id mapped to it). This lets policy variables (<code>${iot:Connection.Thing.ThingName}</code>) auto-scope each device. With a custom authorizer you set the principal/thing from the JWT <code>sub</code>.</li>
+</ul>
+<h3 id="topic-permissions-iam-iot-policies">Topic permissions / IAM / IoT policies</h3><p>IoT <strong>policies</strong> (not IAM policies) govern device pub/sub. The golden scoped policy:</p>
+<pre class="code-block" data-lang="jsonc"><code class="language-json">{
+  &quot;Version&quot;: &quot;2012-10-17&quot;,
+  &quot;Statement&quot;: [
+    { &quot;Effect&quot;: &quot;Allow&quot;, &quot;Action&quot;: &quot;iot:Connect&quot;,
+      &quot;Resource&quot;: &quot;arn:aws:iot:REGION:ACCOUNT:client/${iot:Connection.Thing.ThingName}&quot; },
+
+    { &quot;Effect&quot;: &quot;Allow&quot;, &quot;Action&quot;: &quot;iot:Subscribe&quot;,
+      &quot;Resource&quot;: [
+        &quot;arn:aws:iot:REGION:ACCOUNT:topicfilter/driver/${iot:Connection.Thing.ThingName}/orders&quot;,
+        &quot;arn:aws:iot:REGION:ACCOUNT:topicfilter/driver/${iot:Connection.Thing.ThingName}/orders/*&quot;,
+        &quot;arn:aws:iot:REGION:ACCOUNT:topicfilter/driver/${iot:Connection.Thing.ThingName}/commands&quot;,
+        &quot;arn:aws:iot:REGION:ACCOUNT:topicfilter/driver/${iot:Connection.Thing.ThingName}/status&quot;
+      ]},
+
+    { &quot;Effect&quot;: &quot;Allow&quot;, &quot;Action&quot;: &quot;iot:Receive&quot;,
+      &quot;Resource&quot;: &quot;arn:aws:iot:REGION:ACCOUNT:topic/driver/${iot:Connection.Thing.ThingName}/*&quot; },
+
+    { &quot;Effect&quot;: &quot;Allow&quot;, &quot;Action&quot;: [&quot;iot:Publish&quot;,&quot;iot:RetainPublish&quot;],
+      &quot;Resource&quot;: [
+        &quot;arn:aws:iot:REGION:ACCOUNT:topic/driver/${iot:Connection.Thing.ThingName}/location&quot;,
+        &quot;arn:aws:iot:REGION:ACCOUNT:topic/driver/${iot:Connection.Thing.ThingName}/ack&quot;,
+        &quot;arn:aws:iot:REGION:ACCOUNT:topic/driver/${iot:Connection.Thing.ThingName}/status&quot;
+      ]}
+  ]
+}</code></pre><p>Note <code>topicfilter/</code> for Subscribe vs <code>topic/</code> for Publish/Receive — a common gotcha that silently breaks subscriptions. The <code>${iot:Connection.Thing.ThingName}</code> variable means <strong>one policy scopes every device to itself</strong> — you don&#39;t write a policy per rider.</p>
+<h3 id="scaling-considerations">Scaling considerations</h3><ul>
+<li>Backend = stateless HTTP publish (no broker connection to scale).</li>
+<li>Inbound telemetry → <strong>Basic Ingest</strong> (<code>$aws/rules/&lt;ruleName&gt;</code>) bypasses the pub/sub broker → cheaper, no fan-out cost.</li>
+<li>Raise connect-rate and connection quotas before a big rollout.</li>
+<li>Shard nothing in the app; AWS handles broker scale.</li>
+</ul>
+<h3 id="monitoring-logging">Monitoring / logging</h3><ul>
+<li>Enable <strong>AWS IoT logging to CloudWatch</strong> (set default log level to WARN/ERROR in prod, DEBUG while building).</li>
+<li>Key CloudWatch metrics: <code>Connect.Success/Failure/AuthError</code>, <code>PublishIn/Out.Success</code>, <code>Subscribe.Success</code>, <code>Throttle</code>, <code>Ping.Success</code>. Alarm on AuthError spikes (bad token rollout) and Throttle (storm).</li>
+<li>The <strong>MQTT test client</strong> in the console is your fastest &quot;is the broker even getting this?&quot; check.</li>
+</ul>
+<h3 id="exact-aws-setup-steps-poc-cert-path-10-min">Exact AWS setup steps (POC, cert path — ~10 min)</h3><ol>
+<li><strong>Find your endpoint:</strong> IoT Core console → <strong>Settings</strong> → copy <strong>Device data endpoint</strong> (<code>xxxx-ats.iot.REGION.amazonaws.com</code>). Or <code>aws iot describe-endpoint --endpoint-type iot:Data-ATS</code>.</li>
+<li><strong>Create a Thing:</strong> Console → <strong>All devices → Things → Create things → Create single thing</strong> → name it your <code>driverId</code> (e.g. <code>driver-123</code>) → <strong>Auto-generate a new certificate</strong>.</li>
+<li><strong>Download</strong> the <strong>device cert</strong>, <strong>private key</strong>, and <strong>Amazon Root CA 1</strong>. (Private key is shown once — save it.)</li>
+<li><strong>Create the policy</strong> above (Console → <strong>Security → Policies → Create</strong>), swap REGION/ACCOUNT. For a quick dev-only test you may use <code>&quot;Action&quot;:&quot;iot:*&quot;,&quot;Resource&quot;:&quot;*&quot;</code> — <strong>never ship this.</strong></li>
+<li><strong>Attach</strong> policy → certificate, and certificate → thing. <strong>Activate</strong> the certificate.</li>
+<li><strong>Test in console:</strong> <strong>MQTT test client</strong> → Subscribe to <code>driver/123/orders</code> → in another tab Publish to it → you should see the message. The pipe works.</li>
+</ol>
+<h3 id="setup-steps-poc-cognito-path-for-rn-over-websocket">Setup steps (POC, Cognito path — for RN over WebSocket)</h3><ol>
+<li>Cognito → create an <strong>Identity Pool</strong>, enable the auth (or unauth, dev only) role.</li>
+<li>Attach an IAM policy to that role allowing <code>iot:Connect/Subscribe/Receive/Publish</code> on your scoped ARNs (same shape as above but as an <strong>IAM</strong> policy on the Cognito role).</li>
+<li>App uses AWS credentials from Cognito to <strong>sign a WSS URL</strong> (SigV4) and connect. The AWS IoT Device SDK / amazon-cognito-identity-js does the signing; or use the custom authorizer to skip signing entirely.</li>
+</ol>
+<h3 id="custom-authorizer-production-the-lambda">Custom Authorizer (production) — the Lambda</h3><pre class="code-block" data-lang="ts"><code class="language-typescript">// authorizer.ts  — validates your existing app JWT, returns a scoped IoT policy
+import { verifyAppJwt } from &quot;./jwt&quot;; // your existing verifier
+
+export const handler = async (event: any) =&gt; {
+  const token = event.protocolData?.mqtt?.username     // app sends JWT as MQTT username (or in token field)
+             ?? event.token;
+  const claims = await verifyAppJwt(token);             // throws if invalid -&gt; connection denied
+  const driverId = claims.sub;                          // the rider&#39;s id
+  const region = process.env.REGION, account = process.env.ACCOUNT;
+  const T = (kind: &quot;topic&quot; | &quot;topicfilter&quot;, suffix: string) =&gt;
+    `arn:aws:iot:${region}:${account}:${kind}/driver/${driverId}/${suffix}`;
+
+  return {
+    isAuthenticated: true,
+    principalId: driverId,
+    disconnectAfterInSeconds: 86400,
+    refreshAfterInSeconds: 3600,
+    policyDocuments: [{
+      Version: &quot;2012-10-17&quot;,
+      Statement: [
+        { Effect: &quot;Allow&quot;, Action: &quot;iot:Connect&quot;, Resource: `arn:aws:iot:${region}:${account}:client/${driverId}` },
+        { Effect: &quot;Allow&quot;, Action: &quot;iot:Subscribe&quot;, Resource: [T(&quot;topicfilter&quot;,&quot;orders&quot;), T(&quot;topicfilter&quot;,&quot;orders/*&quot;), T(&quot;topicfilter&quot;,&quot;commands&quot;)] },
+        { Effect: &quot;Allow&quot;, Action: &quot;iot:Receive&quot;,   Resource: T(&quot;topic&quot;,&quot;*&quot;) },
+        { Effect: &quot;Allow&quot;, Action: &quot;iot:Publish&quot;,   Resource: [T(&quot;topic&quot;,&quot;location&quot;), T(&quot;topic&quot;,&quot;ack&quot;), T(&quot;topic&quot;,&quot;status&quot;)] },
+      ],
+    }],
+  };
+};</code></pre><p>Register it: <strong>Security → Custom authorizers → Create</strong>, point at this Lambda, (optionally enable token signing). The app then connects with the authorizer name in the connect params and the JWT as credentials.</p>
+<h3 id="debugging-tips">Debugging tips</h3><ul>
+<li><strong>Connection silently fails</strong> → 90% an auth/policy mismatch. Turn on CloudWatch IoT logs at DEBUG; the log line tells you exactly which <code>iot:Subscribe</code>/<code>iot:Connect</code> was denied and on which resource ARN.</li>
+<li><strong>Subscribe &quot;works&quot; but no messages</strong> → you used <code>topic/</code> instead of <code>topicfilter/</code> in the Subscribe statement, or the publisher used a different topic case (topics are case-sensitive).</li>
+<li><strong>Connects then immediately drops</strong> → duplicate <code>clientId</code> (two clients, same id — they kick each other in a loop), or LWT/keep-alive misconfig.</li>
+<li>Always reproduce in the <strong>MQTT test client</strong> first to isolate device vs broker.</li>
+</ul>
+<hr>
+<h2 id="4-react-native-mqtt-integration">4. React Native MQTT Integration</h2><h3 id="best-rn-mqtt-libraries-in-2026-and-the-decision">Best RN MQTT libraries in 2026 — and the decision</h3><p>The hard truth: <code>mqtt.js</code> (the canonical JS client) depends on Node&#39;s <code>net</code>/<code>tls</code> TCP primitives that <strong>don&#39;t exist in the RN runtime</strong>, so you can&#39;t just <code>npm i mqtt</code> and connect over TCP. You have two viable strategies:</p>
+<table>
+<thead>
+<tr>
+<th>Library / approach</th>
+<th>Transport</th>
+<th>Hermes</th>
+<th>Native build</th>
+<th>Background/battery</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><code>@taoqf/react-native-mqtt</code></strong> (mqtt.js fork over WebSocket)</td>
+<td>MQTT-over-WSS</td>
+<td>✅</td>
+<td>none (pure JS)</td>
+<td>OK foreground; WS dies in bg like everything</td>
+<td><strong>Use for POC + works great with AWS IoT WSS</strong></td>
+</tr>
+<tr>
+<td><strong><code>sp-react-native-mqtt</code></strong> (native, Paho-based)</td>
+<td>native TCP+TLS (8883)</td>
+<td>✅</td>
+<td>yes (autolink)</td>
+<td>best foreground battery; supports keep-alive tuning</td>
+<td><strong>Production upgrade for battery/Android bg behavior</strong></td>
+</tr>
+<tr>
+<td><strong><code>@ecodevstack/react-native-mqtt-client</code></strong> (native, New Arch, 2026)</td>
+<td>native TCP+TLS</td>
+<td>✅ (New Arch)</td>
+<td>yes</td>
+<td>promising, newest</td>
+<td>Watch it; evaluate before betting prod on a young lib</td>
+</tr>
+<tr>
+<td><strong><code>rn-native-mqtt</code></strong> (davesters, native)</td>
+<td>native TCP+TLS</td>
+<td>✅</td>
+<td>yes</td>
+<td>good TLS config</td>
+<td>Solid alt to sp-</td>
+</tr>
+<tr>
+<td><strong>Paho over WebSocket</strong> (<code>react-native-paho-mqtt</code>)</td>
+<td>WSS</td>
+<td>✅</td>
+<td>none</td>
+<td>OK</td>
+<td>Older API; fork above is nicer</td>
+</tr>
+<tr>
+<td><strong>AWS IoT Device SDK JS v2</strong></td>
+<td>WSS/SigV4</td>
+<td>partial</td>
+<td>needs polyfills in RN</td>
+<td>—</td>
+<td>Painful in RN; skip unless you love polyfilling</td>
+</tr>
+</tbody></table>
+<blockquote class="accent" data-label="Decision"><p><strong>Recommendation:</strong></p>
+<ul>
+<li><strong>For your 4–5 hr POC:</strong> <strong><code>@taoqf/react-native-mqtt</code></strong> (MQTT over WebSocket). Pure JS, Hermes-safe, no native build headaches, and AWS IoT Core speaks MQTT-over-WSS on 443 — so it sails through corporate/mobile firewalls and pairs with the custom-authorizer JWT flow with no SigV4 signing.</li>
+<li><strong>For production battery/background on Android:</strong> migrate the <em>transport</em> to a <strong>native client</strong> (<code>sp-react-native-mqtt</code> or evaluate <code>@ecodevstack/...</code>) behind the same service interface you build below. Because you&#39;ll hide the client behind an adapter, this swap is a one-file change.</li>
+</ul>
+</blockquote><p>The architecture below is <strong>transport-agnostic</strong> on purpose — a thin <code>IMqttTransport</code> adapter wraps whichever library, so the rest of your app never imports the MQTT lib directly.</p>
+<h3 id="installation">Installation</h3><pre class="code-block" data-lang="bash"><code class="language-bash"># POC transport (WebSocket, pure JS)
+yarn add @taoqf/react-native-mqtt
+# helpers
+yarn add @react-native-community/netinfo        # network state -&gt; reconnect decisions
+yarn add react-native-background-timer          # keep timers alive briefly in bg (optional)
+# you already have: @reduxjs/toolkit react-redux
+
+# (Production native option later)
+# yarn add sp-react-native-mqtt &amp;&amp; cd ios &amp;&amp; pod install</code></pre><h3 id="ios-setup">iOS setup</h3><ul>
+<li>Pure-JS WS path: nothing to build. Just allow TLS (default). If you ever use plaintext WS in dev, you&#39;d need an ATS exception — don&#39;t; use WSS.</li>
+<li>Native lib path: <code>cd ios &amp;&amp; pod install</code>. Add <code>UIBackgroundModes</code> only if you genuinely need brief background execution (you mostly shouldn&#39;t — see limits).</li>
+</ul>
+<h3 id="android-setup">Android setup</h3><ul>
+<li>WS path: autolinked, nothing to do.</li>
+<li>Native lib path: autolinking handles it (RN 0.60+). Add <code>INTERNET</code> permission (default). For background you&#39;ll fight Doze/App Standby — see §7; the right answer is FCM, not a foreground service, unless you already run one for GPS.</li>
+<li><strong>Hermes:</strong> all recommended libs are Hermes-compatible. WS path is just JS so it&#39;s automatically fine.</li>
+</ul>
+<h3 id="background-limitations-read-before-promising-anything">Background limitations (read before promising anything)</h3><ul>
+<li><strong>iOS:</strong> suspends your app (and its sockets) shortly after backgrounding. No general &quot;keep MQTT alive in background.&quot; Use push.</li>
+<li><strong>Android:</strong> Doze + App Standby + aggressive OEM killers (Xiaomi/Oppo/Vivo are brutal in India) will sever the socket. A foreground service can hold a connection but you need a persistent notification and a real justification (you may already have one for live GPS during an active trip — piggyback on that, <em>only during an active order</em>).</li>
+<li><strong>Design consequence:</strong> connect MQTT when app is <strong>active</strong>; on background, gracefully disconnect (or let it die) and lean on FCM; on foreground, reconnect + reconcile.</li>
+</ul>
+<h3 id="network-reconnect-app-state-handling">Network / reconnect / app-state handling</h3><ul>
+<li><strong>NetInfo</strong> drives reconnects: don&#39;t blindly retry while offline; wait for <code>isConnected &amp;&amp; isInternetReachable</code>, then reconnect with backoff.</li>
+<li><strong>AppState</strong> drives connect/disconnect: <code>active</code> → ensure connected; <code>background</code>/<code>inactive</code> → stop reconnect attempts (optionally disconnect).</li>
+<li><strong>Backoff + jitter</strong> prevents reconnect storms across the fleet (§7).</li>
+</ul>
+<h3 id="battery-considerations">Battery considerations</h3><ul>
+<li>Keep-alive 45–60s, not 10s.</li>
+<li>QoS 0 for GPS; batch nothing you don&#39;t need.</li>
+<li>Disconnect when backgrounded; don&#39;t hold a socket the OS will kill anyway.</li>
+<li>One connection, few topics.</li>
+</ul>
+<h3 id="memory-leak-prevention">Memory-leak prevention</h3><ul>
+<li><strong>Singleton</strong> service (one client, ever).</li>
+<li>Every <code>.on()</code> listener you add, you remove on cleanup.</li>
+<li>Clear all timers (reconnect, keep-alive, accept-window) on disconnect/teardown.</li>
+<li>Unsubscribe Redux/event listeners in component <code>useEffect</code> cleanups.</li>
+<li>Never create a new client on re-render.</li>
+</ul>
+<h3 id="scalable-folder-structure">Scalable folder structure</h3><pre class="code-block" data-lang="text"><code class="language-text">src/services/mqtt/
+  index.ts                  # public API (getMqttService)
+  MqttService.ts            # singleton orchestrator
+  transport/
+    IMqttTransport.ts       # adapter interface (swap libs here)
+    WebSocketTransport.ts   # @taoqf/react-native-mqtt impl (POC)
+    NativeTransport.ts      # sp-react-native-mqtt impl (prod, later)
+  ConnectionManager.ts      # connect/disconnect, app-state + netinfo
+  ReconnectManager.ts       # backoff + jitter policy
+  SubscriptionManager.ts    # track + restore subscriptions
+  EventBus.ts               # typed pub/sub for the rest of the app
+  topics.ts                 # topic builders (single source of truth)
+  types.ts                  # payload unions, enums, config
+  dedup.ts                  # idempotency cache
+src/store/mqttSlice.ts      # Redux state (status, lastOrder, etc.)
+src/store/orderSlice.ts     # your existing order state</code></pre><h3 id="types-the-contract">Types — the contract</h3><pre class="code-block" data-lang="ts"><code class="language-typescript">// types.ts
+export type MqttStatus = &quot;idle&quot; | &quot;connecting&quot; | &quot;connected&quot; | &quot;reconnecting&quot; | &quot;offline&quot; | &quot;error&quot;;
+
+export type InboundEvent =
+  | { type: &quot;ORDER_ASSIGNED&quot;; messageId: string; orderId: string; ts: number; expiresAt: number;
+      pickup: GeoPoint; drop: GeoPoint; payout: number; distanceKm: number }
+  | { type: &quot;ORDER_CANCELLED&quot;; messageId: string; orderId: string; ts: number; reason?: string }
+  | { type: &quot;ORDER_STATUS_CHANGED&quot;; messageId: string; orderId: string; ts: number; status: OrderStatus }
+  | { type: &quot;FORCE_LOGOUT&quot;; messageId: string; ts: number }
+  | { type: &quot;CONFIG_UPDATE&quot;; messageId: string; ts: number; config: Record&lt;string, unknown&gt; };
+
+export type OutboundEvent =
+  | { type: &quot;ORDER_ACK&quot;; orderId: string; accepted: boolean }
+  | { type: &quot;LOCATION&quot;; lat: number; lng: number; heading?: number; speed?: number };
+
+export interface GeoPoint { lat: number; lng: number; name?: string }
+export type OrderStatus = &quot;ASSIGNED&quot; | &quot;ACCEPTED&quot; | &quot;PICKED&quot; | &quot;DELIVERED&quot; | &quot;CANCELLED&quot;;
+
+export interface MqttConfig {
+  endpoint: string;          // wss://xxxx-ats.iot.region.amazonaws.com/mqtt
+  driverId: string;
+  getToken: () =&gt; Promise&lt;string&gt;;  // your existing JWT getter
+  authorizerName?: string;   // for custom authorizer
+  keepAliveSec?: number;     // default 50
+}</code></pre><h3 id="topic-builders-single-source-of-truth">Topic builders (single source of truth)</h3><pre class="code-block" data-lang="ts"><code class="language-typescript">// topics.ts
+export const topics = (driverId: string) =&gt; ({
+  orders:        `driver/${driverId}/orders`,
+  orderStatus:   (orderId: string) =&gt; `driver/${driverId}/orders/${orderId}/status`,
+  commands:      `driver/${driverId}/commands`,
+  ack:           `driver/${driverId}/ack`,
+  location:      `driver/${driverId}/location`,
+  status:        `driver/${driverId}/status`,
+});
+export type Topics = ReturnType&lt;typeof topics&gt;;</code></pre><h3 id="transport-adapter-the-swap-point">Transport adapter (the swap point)</h3><pre class="code-block" data-lang="ts"><code class="language-typescript">// transport/IMqttTransport.ts
+export interface IMqttTransport {
+  connect(opts: ConnectOpts): Promise&lt;void&gt;;
+  disconnect(): Promise&lt;void&gt;;
+  subscribe(topic: string, qos: 0 | 1): Promise&lt;void&gt;;
+  unsubscribe(topic: string): Promise&lt;void&gt;;
+  publish(topic: string, payload: string, qos: 0 | 1, retain?: boolean): Promise&lt;void&gt;;
+  on(ev: &quot;message&quot;, cb: (topic: string, payload: string) =&gt; void): void;
+  on(ev: &quot;connect&quot; | &quot;close&quot; | &quot;reconnect&quot;, cb: () =&gt; void): void;
+  on(ev: &quot;error&quot;, cb: (e: Error) =&gt; void): void;
+  removeAllListeners(): void;
+}
+export interface ConnectOpts {
+  url: string; clientId: string; username?: string; password?: string;
+  keepalive: number; cleanStart: boolean; will?: { topic: string; payload: string; qos: 0|1; retain: boolean };
+}</code></pre><pre class="code-block" data-lang="ts"><code class="language-typescript">// transport/WebSocketTransport.ts  (POC, @taoqf/react-native-mqtt over WSS)
+import mqtt, { MqttClient } from &quot;@taoqf/react-native-mqtt&quot;;
+import { IMqttTransport, ConnectOpts } from &quot;./IMqttTransport&quot;;
+
+export class WebSocketTransport implements IMqttTransport {
+  private client?: MqttClient;
+  private handlers: Record&lt;string, Function[]&gt; = {};
+
+  connect(o: ConnectOpts): Promise&lt;void&gt; {
+    return new Promise((resolve, reject) =&gt; {
+      // We manage reconnect ourselves -&gt; reconnectPeriod: 0
+      this.client = mqtt.connect(o.url, {
+        clientId: o.clientId,
+        username: o.username,
+        password: o.password,
+        keepalive: o.keepalive,
+        clean: o.cleanStart,
+        reconnectPeriod: 0,
+        connectTimeout: 10_000,
+        will: o.will ? { topic: o.will.topic, payload: o.will.payload, qos: o.will.qos, retain: o.will.retain } : undefined,
+        protocolVersion: 4, // MQTT 3.1.1 (AWS IoT supports 3.1.1 and 5)
+      });
+      this.client.on(&quot;connect&quot;, () =&gt; { this.emit(&quot;connect&quot;); resolve(); });
+      this.client.on(&quot;message&quot;, (t: string, p: Buffer) =&gt; this.emit(&quot;message&quot;, t, p.toString()));
+      this.client.on(&quot;close&quot;, () =&gt; this.emit(&quot;close&quot;));
+      this.client.on(&quot;error&quot;, (e: Error) =&gt; { this.emit(&quot;error&quot;, e); reject(e); });
+    });
+  }
+  disconnect() { return new Promise&lt;void&gt;((res) =&gt; { this.client?.end(true, {}, () =&gt; res()); }); }
+  subscribe(topic: string, qos: 0 | 1) {
+    return new Promise&lt;void&gt;((res, rej) =&gt; this.client!.subscribe(topic, { qos }, (e) =&gt; e ? rej(e) : res()));
+  }
+  unsubscribe(topic: string) {
+    return new Promise&lt;void&gt;((res, rej) =&gt; this.client!.unsubscribe(topic, (e?: Error) =&gt; e ? rej(e) : res()));
+  }
+  publish(topic: string, payload: string, qos: 0 | 1, retain = false) {
+    return new Promise&lt;void&gt;((res, rej) =&gt; this.client!.publish(topic, payload, { qos, retain }, (e) =&gt; e ? rej(e) : res()));
+  }
+  on(ev: string, cb: Function) { (this.handlers[ev] ??= []).push(cb); }
+  private emit(ev: string, ...args: any[]) { (this.handlers[ev] || []).forEach((h) =&gt; h(...args)); }
+  removeAllListeners() { this.handlers = {}; this.client?.removeAllListeners?.(); }
+}</code></pre><h3 id="reconnect-manager">Reconnect manager</h3><pre class="code-block" data-lang="ts"><code class="language-typescript">// ReconnectManager.ts
+export class ReconnectManager {
+  private attempt = 0;
+  private timer?: ReturnType&lt;typeof setTimeout&gt;;
+  constructor(private base = 1000, private max = 30_000, private jitter = 0.2) {}
+
+  schedule(reconnect: () =&gt; void) {
+    const expo = Math.min(this.max, this.base * 2 ** this.attempt);
+    const delay = expo + expo * this.jitter * (Math.random() * 2 - 1); // ±20%
+    this.attempt++;
+    this.timer = setTimeout(reconnect, Math.max(0, delay));
+  }
+  reset() { this.attempt = 0; this.cancel(); }
+  cancel() { if (this.timer) clearTimeout(this.timer); this.timer = undefined; }
+}</code></pre><h3 id="subscription-manager">Subscription manager</h3><pre class="code-block" data-lang="ts"><code class="language-typescript">// SubscriptionManager.ts
+import { IMqttTransport } from &quot;./transport/IMqttTransport&quot;;
+export class SubscriptionManager {
+  private subs = new Map&lt;string, 0 | 1&gt;();
+  constructor(private transport: IMqttTransport) {}
+  async add(topic: string, qos: 0 | 1) { this.subs.set(topic, qos); await this.transport.subscribe(topic, qos); }
+  async remove(topic: string) { this.subs.delete(topic); await this.transport.unsubscribe(topic); }
+  /** Call after a reconnect when using clean session (AWS persistent session restores automatically). */
+  async restoreAll() { for (const [t, q] of this.subs) await this.transport.subscribe(t, q); }
+  clear() { this.subs.clear(); }
+}</code></pre><h3 id="dedup-idempotency">Dedup (idempotency)</h3><pre class="code-block" data-lang="ts"><code class="language-typescript">// dedup.ts — drop duplicate QoS1 deliveries by messageId
+export class Dedup {
+  private seen = new Map&lt;string, number&gt;();
+  constructor(private ttlMs = 5 * 60_000, private max = 500) {}
+  isDuplicate(id: string): boolean {
+    this.gc();
+    if (this.seen.has(id)) return true;
+    this.seen.set(id, Date.now());
+    return false;
+  }
+  private gc() {
+    const now = Date.now();
+    for (const [k, t] of this.seen) if (now - t &gt; this.ttlMs) this.seen.delete(k);
+    if (this.seen.size &gt; this.max) this.seen.delete(this.seen.keys().next().value as string);
+  }
+}</code></pre><h3 id="the-singleton-service-orchestrator">The singleton service (orchestrator)</h3><pre class="code-block" data-lang="ts"><code class="language-typescript">// MqttService.ts
+import { AppState, AppStateStatus } from &quot;react-native&quot;;
+import NetInfo from &quot;@react-native-community/netinfo&quot;;
+import { WebSocketTransport } from &quot;./transport/WebSocketTransport&quot;;
+import { IMqttTransport } from &quot;./transport/IMqttTransport&quot;;
+import { ReconnectManager } from &quot;./ReconnectManager&quot;;
+import { SubscriptionManager } from &quot;./SubscriptionManager&quot;;
+import { Dedup } from &quot;./dedup&quot;;
+import { topics } from &quot;./topics&quot;;
+import { InboundEvent, MqttConfig, MqttStatus, OutboundEvent } from &quot;./types&quot;;
+
+type Listener&lt;T&gt; = (v: T) =&gt; void;
+
+class MqttService {
+  private static _i: MqttService;
+  static get instance() { return (this._i ??= new MqttService()); }
+
+  private transport!: IMqttTransport;
+  private cfg!: MqttConfig;
+  private t!: ReturnType&lt;typeof topics&gt;;
+  private subs!: SubscriptionManager;
+  private reconnect = new ReconnectManager();
+  private dedup = new Dedup();
+  private status: MqttStatus = &quot;idle&quot;;
+  private wantConnected = false;
+  private appActive = true;
+  private netOk = true;
+
+  private statusListeners = new Set&lt;Listener&lt;MqttStatus&gt;&gt;();
+  private eventListeners = new Set&lt;Listener&lt;InboundEvent&gt;&gt;();
+  private appStateSub?: { remove: () =&gt; void };
+  private netSub?: () =&gt; void;
+
+  /** Call once after login. */
+  async start(config: MqttConfig) {
+    this.cfg = config;
+    this.t = topics(config.driverId);
+    this.wantConnected = true;
+
+    this.appStateSub = AppState.addEventListener(&quot;change&quot;, this.onAppState);
+    this.netSub = NetInfo.addEventListener((s) =&gt; {
+      this.netOk = !!(s.isConnected &amp;&amp; s.isInternetReachable);
+      if (this.netOk &amp;&amp; this.appActive) this.ensureConnected();
+      else this.reconnect.cancel();
+    });
+    await this.ensureConnected();
+  }
+
+  /** Call on logout / teardown. */
+  async stop() {
+    this.wantConnected = false;
+    this.reconnect.cancel();
+    this.appStateSub?.remove();
+    this.netSub?.();
+    await this.safeDisconnect();
+    this.setStatus(&quot;idle&quot;);
+  }
+
+  onStatus(cb: Listener&lt;MqttStatus&gt;) { this.statusListeners.add(cb); cb(this.status); return () =&gt; this.statusListeners.delete(cb); }
+  onEvent(cb: Listener&lt;InboundEvent&gt;) { this.eventListeners.add(cb); return () =&gt; this.eventListeners.delete(cb); }
+
+  async ackOrder(orderId: string, accepted: boolean) {
+    await this.publish(this.t.ack, { type: &quot;ORDER_ACK&quot;, orderId, accepted } as OutboundEvent, 1);
+  }
+  async sendLocation(lat: number, lng: number, heading?: number, speed?: number) {
+    await this.publish(this.t.location, { type: &quot;LOCATION&quot;, lat, lng, heading, speed } as OutboundEvent, 0);
+  }
+
+  // ---- internals ----
+  private onAppState = (s: AppStateStatus) =&gt; {
+    this.appActive = s === &quot;active&quot;;
+    if (this.appActive &amp;&amp; this.netOk) this.ensureConnected();
+    else this.reconnect.cancel(); // don&#39;t fight the OS in background
+  };
+
+  private async ensureConnected() {
+    if (!this.wantConnected || this.status === &quot;connecting&quot; || this.status === &quot;connected&quot;) return;
+    if (!this.appActive || !this.netOk) return;
+    this.setStatus(&quot;connecting&quot;);
+    try {
+      const token = await this.cfg.getToken();
+      this.transport = new WebSocketTransport();
+      this.subs = new SubscriptionManager(this.transport);
+      this.wireTransport();
+
+      const ka = this.cfg.keepAliveSec ?? 50;
+      const wssUrl =
+        `${this.cfg.endpoint}/mqtt` +
+        (this.cfg.authorizerName ? `?x-amz-customauthorizer-name=${this.cfg.authorizerName}` : &quot;&quot;);
+
+      await this.transport.connect({
+        url: wssUrl,
+        clientId: this.cfg.driverId,           // stable -&gt; persistent session
+        username: this.cfg.driverId,
+        password: token,                        // JWT consumed by custom authorizer
+        keepalive: ka,
+        cleanStart: false,                      // persistent session
+        will: { topic: this.t.status, payload: JSON.stringify({ status: &quot;offline&quot;, ts: Date.now() }), qos: 1, retain: true },
+      });
+
+      this.setStatus(&quot;connected&quot;);
+      this.reconnect.reset();
+      await this.subs.add(this.t.orders, 1);
+      await this.subs.add(this.t.commands, 1);
+      await this.publish(this.t.status, { status: &quot;online&quot;, ts: Date.now() } as any, 1, true);
+    } catch (e) {
+      this.setStatus(&quot;error&quot;);
+      this.scheduleReconnect();
+    }
+  }
+
+  private wireTransport() {
+    this.transport.on(&quot;message&quot;, (topic, payload) =&gt; this.handleMessage(topic, payload));
+    this.transport.on(&quot;close&quot;, () =&gt; { if (this.wantConnected) { this.setStatus(&quot;offline&quot;); this.scheduleReconnect(); } });
+    this.transport.on(&quot;error&quot;, () =&gt; { /* logged by observability layer */ });
+  }
+
+  private handleMessage(topic: string, raw: string) {
+    let evt: InboundEvent;
+    try { evt = JSON.parse(raw); } catch { return; }                 // never trust the wire
+    if (!evt || typeof (evt as any).type !== &quot;string&quot;) return;
+    if ((evt as any).messageId &amp;&amp; this.dedup.isDuplicate((evt as any).messageId)) return; // QoS1 dup guard
+    this.eventListeners.forEach((l) =&gt; l(evt));
+  }
+
+  private async publish(topic: string, body: object, qos: 0 | 1, retain = false) {
+    if (this.status !== &quot;connected&quot;) return; // (GOOD-TO-HAVE: outbox + flush on reconnect)
+    await this.transport.publish(topic, JSON.stringify(body), qos, retain);
+  }
+
+  private scheduleReconnect() {
+    if (!this.wantConnected || !this.appActive || !this.netOk) return;
+    this.setStatus(&quot;reconnecting&quot;);
+    this.reconnect.schedule(() =&gt; this.ensureConnected());
+  }
+
+  private async safeDisconnect() {
+    try { this.transport?.removeAllListeners(); await this.transport?.disconnect(); } catch {}
+  }
+  private setStatus(s: MqttStatus) { this.status = s; this.statusListeners.forEach((l) =&gt; l(s)); }
+}
+
+export const getMqttService = () =&gt; MqttService.instance;</code></pre><h3 id="redux-integration">Redux integration</h3><pre class="code-block" data-lang="ts"><code class="language-typescript">// store/mqttSlice.ts
+import { createSlice, PayloadAction } from &quot;@reduxjs/toolkit&quot;;
+import { MqttStatus } from &quot;../services/mqtt/types&quot;;
+
+interface MqttState { status: MqttStatus; lastError?: string; }
+const initialState: MqttState = { status: &quot;idle&quot; };
+
+const mqttSlice = createSlice({
+  name: &quot;mqtt&quot;,
+  initialState,
+  reducers: {
+    setStatus: (s, a: PayloadAction&lt;MqttStatus&gt;) =&gt; { s.status = a.payload; },
+  },
+});
+export const { setStatus } = mqttSlice.actions;
+export default mqttSlice.reducer;</code></pre><pre class="code-block" data-lang="ts"><code class="language-typescript">// store/mqttBridge.ts — connect the service to Redux (call once at app start, after login)
+import { getMqttService } from &quot;../services/mqtt&quot;;
+import { store } from &quot;./store&quot;;
+import { setStatus } from &quot;./mqttSlice&quot;;
+import { orderAssigned, orderCancelled } from &quot;./orderSlice&quot;; // your existing slice
+
+export function bindMqttToStore() {
+  const svc = getMqttService();
+  svc.onStatus((status) =&gt; store.dispatch(setStatus(status)));
+  svc.onEvent((evt) =&gt; {
+    switch (evt.type) {
+      case &quot;ORDER_ASSIGNED&quot;:  store.dispatch(orderAssigned(evt)); break;   // triggers your accept modal
+      case &quot;ORDER_CANCELLED&quot;: store.dispatch(orderCancelled(evt)); break;
+      // ...
+    }
+  });
+}</code></pre><p>Then in a component (e.g. the accept modal):</p>
+<pre class="code-block" data-lang="tsx"><code class="language-typescript">const status = useSelector((s: RootState) =&gt; s.mqtt.status);
+const order  = useSelector((s: RootState) =&gt; s.order.pending);
+const accept = () =&gt; getMqttService().ackOrder(order.orderId, true);</code></pre><h3 id="cleanup-strategy">Cleanup strategy</h3><ul>
+<li><code>getMqttService().start(cfg)</code> after login; <code>.stop()</code> on logout.</li>
+<li>The service self-manages AppState/NetInfo listeners and removes them in <code>stop()</code>.</li>
+<li>Components only subscribe via Redux selectors or <code>onEvent</code>/<code>onStatus</code> (which return unsubscribe fns) inside <code>useEffect</code> cleanups. No component ever touches the transport.</li>
+</ul>
+<hr>
+<h2 id="5-build-a-working-poc">5. Build a Working POC</h2><p>Goal in 4–5 hrs: backend &quot;assigns&quot; a mock order → AWS IoT → RN device shows the order → rider taps Accept → backend sees the ACK.</p>
+<h3 id="folder-structure">Folder structure</h3><pre class="code-block" data-lang="text"><code class="language-text">mqtt-poc/
+  backend/
+    package.json
+    .env
+    publishOrder.ts        # assigns a mock order via IoT Data Plane HTTP publish
+    ackListener.md         # (note: ACKs are routed via an IoT Rule -&gt; see below)
+  app/   (your RN app)
+    src/services/mqtt/...  # from §4</code></pre><h3 id="environment-variables">Environment variables</h3><pre class="code-block" data-lang="bash"><code class="language-bash"># backend/.env
+AWS_REGION=ap-south-1
+IOT_ENDPOINT=xxxx-ats.iot.ap-south-1.amazonaws.com   # without https://
+DRIVER_ID=driver-123
+# AWS creds via `aws configure` / env / IAM role</code></pre><h3 id="package-installs">Package installs</h3><pre class="code-block" data-lang="bash"><code class="language-bash"># backend
+cd backend &amp;&amp; npm init -y
+npm i @aws-sdk/client-iot-data-plane uuid dotenv
+npm i -D typescript ts-node @types/node @types/uuid
+npx tsc --init</code></pre><h3 id="backend-assign-a-mock-order">Backend: assign a mock order</h3><p>Backend does <strong>not</strong> hold an MQTT connection — it uses the stateless <strong>IoT Data Plane <code>publish</code> HTTP API</strong>, which is how you scale publishers (no per-instance broker socket).</p>
+<pre class="code-block" data-lang="ts"><code class="language-typescript">// backend/publishOrder.ts
+import &quot;dotenv/config&quot;;
+import { IoTDataPlaneClient, PublishCommand } from &quot;@aws-sdk/client-iot-data-plane&quot;;
+import { v4 as uuid } from &quot;uuid&quot;;
+
+const client = new IoTDataPlaneClient({
+  region: process.env.AWS_REGION,
+  endpoint: `https://${process.env.IOT_ENDPOINT}`,
+});
+
+async function assignOrder(driverId: string) {
+  const orderId = &quot;ord_&quot; + uuid().slice(0, 8);
+  const payload = {
+    type: &quot;ORDER_ASSIGNED&quot;,
+    messageId: &quot;msg_&quot; + uuid(),
+    orderId,
+    ts: Date.now(),
+    expiresAt: Date.now() + 30_000,
+    pickup: { lat: 13.0827, lng: 80.2707, name: &quot;Marina Kitchen&quot; },
+    drop:   { lat: 13.0604, lng: 80.2496, name: &quot;T. Nagar&quot; },
+    payout: 85,
+    distanceKm: 4.2,
+  };
+  await client.send(new PublishCommand({
+    topic: `driver/${driverId}/orders`,
+    qos: 1,
+    payload: Buffer.from(JSON.stringify(payload)),
+  }));
+  console.log(&quot;Assigned&quot;, orderId, &quot;to&quot;, driverId);
+}
+
+assignOrder(process.env.DRIVER_ID!).catch(console.error);</code></pre><p>Run it: <code>npx ts-node publishOrder.ts</code> → the connected device receives the order.</p>
+<h3 id="receiving-the-riders-ack-server-side">Receiving the rider&#39;s ACK (server side)</h3><p>Two easy options:</p>
+<ol>
+<li><strong>Console/MQTTX:</strong> subscribe to <code>driver/+/ack</code> and watch ACKs arrive (fastest for POC).</li>
+<li><strong>Production-ish:</strong> create an <strong>IoT Rule</strong> <code>SELECT * FROM &#39;driver/+/ack&#39;</code> with an action → Lambda/DynamoDB to mark the order accepted. (Console → Message routing → Rules → Create.)</li>
+</ol>
+<h3 id="simulate-rider-assignment-loop-optional">Simulate rider assignment loop (optional)</h3><p>Wrap <code>assignOrder</code> in a <code>setInterval</code> or a tiny Express endpoint <code>POST /assign</code> so you can fire orders from a button/curl during the demo:</p>
+<pre class="code-block" data-lang="ts"><code class="language-typescript">// curl -X POST localhost:3000/assign
+import express from &quot;express&quot;;
+const app = express();
+app.post(&quot;/assign&quot;, async (_req, res) =&gt; { await assignOrder(process.env.DRIVER_ID!); res.sendStatus(200); });
+app.listen(3000);</code></pre><h3 id="rn-app-wiring-minimum-to-demo">RN app wiring (minimum to demo)</h3><pre class="code-block" data-lang="ts"><code class="language-typescript">// App bootstrap, after login:
+import { getMqttService } from &quot;./src/services/mqtt&quot;;
+import { bindMqttToStore } from &quot;./src/store/mqttBridge&quot;;
+
+bindMqttToStore();
+await getMqttService().start({
+  endpoint: &quot;wss://xxxx-ats.iot.ap-south-1.amazonaws.com&quot;,
+  driverId: &quot;driver-123&quot;,
+  authorizerName: &quot;rider-jwt-authorizer&quot;,   // omit for Cognito/cert POC
+  getToken: async () =&gt; await getStoredJwt(), // your existing token
+});</code></pre><h3 id="testing-steps-end-to-end">Testing steps (end to end)</h3><ol>
+<li>AWS console <strong>MQTT test client</strong> → Subscribe <code>driver/123/orders</code>. (Confirm broker works.)</li>
+<li>Start RN app → confirm <code>status</code> flips to <code>connected</code> (log it / show a dot in UI).</li>
+<li>Run <code>npx ts-node publishOrder.ts</code> → device shows the accept modal.</li>
+<li>Tap <strong>Accept</strong> → watch <code>driver/+/ack</code> in MQTTX/console → see <code>{accepted:true}</code>.</li>
+<li><strong>Reconnect test:</strong> turn on airplane mode for 10s → status → <code>reconnecting</code>/<code>offline</code> → turn off → reconnects, resubscribes, status <code>connected</code>. Publish an order <em>while offline</em> (persistent session) → it arrives after reconnect.</li>
+</ol>
+<h3 id="poc-scope-honesty">POC scope honesty</h3><ul>
+<li><strong>WebSocket transport + Cognito or a dev cert</strong> is the fastest green path. Custom authorizer is ~30 extra min if your JWT verifier is importable.</li>
+<li>If AWS auth fights you for &gt;45 min, <strong>fall back to local Mosquitto</strong> (§6) to prove the <em>app architecture</em>, then point the same service at AWS later (only <code>endpoint</code>/auth change).</li>
+</ul>
+<hr>
+<h2 id="6-local-development-setup">6. Local Development Setup</h2><h3 id="which-is-easiest">Which is easiest?</h3><p><strong>Mosquitto via Docker</strong> for local dev — one command, tiny, supports WS. EMQX if you want a dashboard and to rehearse clustering. HiveMQ for enterprise feel. For <em>you</em>, Mosquitto.</p>
+<h3 id="mosquitto-docker-with-websocket-for-rn">Mosquitto (Docker, with WebSocket for RN)</h3><pre class="code-block" data-lang="bash"><code class="language-bash"># mosquitto.conf
+listener 1883
+protocol mqtt
+listener 9001
+protocol websockets
+allow_anonymous true   # DEV ONLY</code></pre><pre class="code-block" data-lang="bash"><code class="language-bash">docker run -it --rm --name mqtt \
+  -p 1883:1883 -p 9001:9001 \
+  -v &quot;$PWD/mosquitto.conf:/mosquitto/config/mosquitto.conf&quot; \
+  eclipse-mosquitto</code></pre><p>RN connects to <code>ws://&lt;your-LAN-ip&gt;:9001</code> (use the LAN IP, not <code>localhost</code>, from a device/emulator). Backend publishes to <code>mqtt://localhost:1883</code>.</p>
+<h3 id="mosquitto-on-mac-no-docker">Mosquitto on Mac (no Docker)</h3><pre class="code-block" data-lang="bash"><code class="language-bash">brew install mosquitto
+/opt/homebrew/opt/mosquitto/sbin/mosquitto -c mosquitto.conf
+brew install mosquitto      # also gives CLI:
+mosquitto_sub -t &#39;driver/123/orders&#39; -q 1
+mosquitto_pub -t &#39;driver/123/orders&#39; -q 1 -m &#39;{&quot;type&quot;:&quot;ORDER_ASSIGNED&quot;,&quot;orderId&quot;:&quot;x&quot;}&#39;</code></pre><h3 id="emqx-docker-with-dashboard">EMQX (Docker, with dashboard)</h3><pre class="code-block" data-lang="bash"><code class="language-bash">docker run -d --name emqx \
+  -p 1883:1883 -p 8083:8083 -p 18083:18083 \
+  emqx/emqx:latest
+# dashboard at http://localhost:18083  (admin / public) — see live connections, topics, metrics</code></pre><p>Great for <em>seeing</em> what&#39;s happening (connection list, subscription tree, message rate) while you build intuition.</p>
+<h3 id="hivemq-docker">HiveMQ (Docker)</h3><pre class="code-block" data-lang="bash"><code class="language-bash">docker run -d --name hivemq -p 1883:1883 -p 8080:8080 hivemq/hivemq-ce</code></pre><h3 id="testing-tools">Testing tools</h3><ul>
+<li><strong>MQTTX</strong> (GUI, by EMQX) — the best desktop client. Multiple connections, WS + TCP, scripted publishes, nice for simulating &quot;the backend.&quot; <code>brew install --cask mqttx</code>.</li>
+<li><strong>MQTT Explorer</strong> — visualizes the entire topic tree live; superb for spotting stray/retained messages and topic-explosion mistakes.</li>
+<li><strong>CLI:</strong> <code>mosquitto_pub</code>/<code>mosquitto_sub</code> (above) for quick scripted checks; the AWS console <strong>MQTT test client</strong> for the cloud broker.</li>
+</ul>
+<blockquote data-label="Note"><p>Workflow: keep MQTT Explorer connected to your broker while developing — you&#39;ll instantly see every publish, catch a retained order you forgot to clear, and verify topic casing.</p>
+</blockquote><hr>
+<h2 id="7-production-concerns">7. Production Concerns</h2><h3 id="scaling-to-lakhsmillions-of-riders">Scaling to lakhs/millions of riders</h3><ul>
+<li><strong>Connections:</strong> AWS IoT scales the broker for you, but raise the <strong>connect-rate</strong> and <strong>max-connections</strong> quotas before launch. One connection per rider, period.</li>
+<li><strong>Publish path:</strong> backend publishes via <strong>IoT Data Plane HTTP</strong> (stateless) → scales with your API tier, not the broker.</li>
+<li><strong>Telemetry ingest:</strong> route GPS via <strong>Basic Ingest</strong> (<code>$aws/rules/&lt;rule&gt;</code>) to Kinesis → it skips broker fan-out and is cheaper. Don&#39;t have a backend service <em>subscribe</em> to <code>driver/+/location</code>; use Rules.</li>
+<li><strong>Cost reality:</strong> at high message volume IoT Core&#39;s $1/M (5KB increments) + connection-minute charges add up. Model it (next). If GPS at 1Hz × lakhs of riders blows the budget, that&#39;s the trigger to evaluate self-managed <strong>EMQX</strong> (no inbound metering) — but that&#39;s future work, not now.</li>
+</ul>
+<h4 id="cost-back-of-envelope-so-youre-not-surprised">Cost back-of-envelope (so you&#39;re not surprised)</h4><ul>
+<li>1 rider connected 24/7 ≈ <strong>$0.04/yr</strong> connectivity.</li>
+<li>Messages: $1 per <strong>million</strong> (5KB units). 100k riders, each sending a GPS ping every 5s for 8 active hrs/day ≈ 100k × 5,760 pings/day ≈ 576M msgs/day ≈ <strong>~$576/day just for location ingest</strong> before order traffic. → This is exactly why you (a) lower GPS frequency when idle, (b) use Basic Ingest, (c) eventually consider EMQX at this scale. For a POC and early launch, it&#39;s pennies.</li>
+</ul>
+<h3 id="topic-explosion">Topic explosion</h3><p>Don&#39;t mint a topic per event type per order (<code>driver/123/orders/456/events/picked</code> × millions). Keep <strong>few topics, typed payloads</strong>. Broker metadata and policy size both suffer from topic sprawl. Your topic count per rider should be a small constant (~5).</p>
+<h3 id="security-risks-auth">Security risks &amp; auth</h3><ul>
+<li>TLS always; never anonymous in prod (your Mosquitto dev config is dev-only).</li>
+<li>Per-device scoped policy via <code>${iot:Connection.Thing.ThingName}</code> — a device must never be able to subscribe to another rider&#39;s topics or to <code>#</code>.</li>
+<li>Revocation: custom authorizer fails the JWT → connection denied. Set <code>refreshAfterInSeconds</code> so policy/token re-evaluates.</li>
+<li>Validate every inbound payload (<code>JSON.parse</code> in try/catch, check <code>type</code>) — never trust the wire.</li>
+</ul>
+<h3 id="duplicate-messages">Duplicate messages</h3><p>QoS 1 <em>will</em> duplicate. Dedup by <code>messageId</code>/<code>orderId</code> (the <code>Dedup</code> class). Make all handlers <strong>idempotent</strong>: assigning the same order twice should be a no-op, not two modals.</p>
+<h3 id="ordering-issues">Ordering issues</h3><p>MQTT preserves order <em>per topic per QoS within a single connection</em> — but reconnects, retries, and your async handlers can reorder at the app layer. Don&#39;t rely on arrival order for correctness. Carry a <code>ts</code> (and ideally a server sequence number) and apply <strong>last-writer-wins by <code>ts</code></strong> for status transitions. Ignore a <code>PICKED</code> that arrives after a <code>DELIVERED</code> with a later <code>ts</code>.</p>
+<h3 id="retained-message-dangers">Retained message dangers</h3><p>Retain <strong>state</strong> (<code>status: online</code>), never <strong>events</strong> (order assignments). A retained order = a ghost order delivered to every future subscriber. If you ever retain something transient by mistake, clear it by publishing an empty retained payload to that topic.</p>
+<h3 id="stale-orders">Stale orders</h3><p>Every order carries <code>expiresAt</code>. The app ignores/auto-dismisses expired orders even if delivered late (persistent session can deliver a tunnel-delayed order after its window). The backend is the source of truth for &quot;is this order still assignable&quot; — the app re-validates via REST on accept if in doubt.</p>
+<h3 id="reconnect-storms">Reconnect storms</h3><p>A regional network blip drops 100k riders; they all reconnect at once → broker connect-rate throttling → cascading failures. Defenses: <strong>exponential backoff + jitter</strong> (in <code>ReconnectManager</code> — the jitter is the important part), don&#39;t reconnect in background, and respect AWS connect-rate quotas (raise them, but also smooth demand). Stable <code>clientId</code> avoids the <em>self-inflicted</em> storm where two clients with the same id repeatedly kick each other.</p>
+<h3 id="battery-drain">Battery drain</h3><p>Keep-alive 45–60s; QoS 0 for GPS; lower GPS frequency when idle/parked; disconnect when backgrounded. Don&#39;t hold a doomed socket in background.</p>
+<h3 id="offline-riders-app-killed-background-restrictions">Offline riders / app killed / background restrictions</h3><ul>
+<li><strong>Background:</strong> treat as disconnected; lean on FCM.</li>
+<li><strong>Killed:</strong> FCM/APNs only path. On open, reconnect + reconcile active order via REST.</li>
+<li><strong>Android OEM killers (Xiaomi/Oppo/Vivo — very relevant in India):</strong> these aggressively kill background apps; do <strong>not</strong> promise background MQTT. High-priority FCM data messages + a foreground service <em>only during an active trip</em> (you likely already run one for GPS) is the realistic pattern.</li>
+<li><strong>iOS:</strong> no general background sockets. Push + on-resume reconcile.</li>
+</ul>
+<h3 id="rate-limiting">Rate limiting</h3><p>Per-connection: 100 msg/s or 512KB/s, 50 subscriptions, 8 topics/SUBSCRIBE. You won&#39;t hit these per rider, but a buggy GPS loop publishing 50/s will get throttled — throttle GPS client-side.</p>
+<h3 id="monitoring-observability-logging">Monitoring / observability / logging</h3><ul>
+<li><strong>CloudWatch IoT metrics:</strong> Connect.Success/AuthError, Throttle, PublishIn/Out, Ping. Alarm on AuthError (bad token rollout) and Throttle (storm).</li>
+<li><strong>App-side:</strong> log connect/disconnect/reconnect with reason + duration to your analytics (Sentry/Datadog). Track &quot;time-to-first-order-after-connect&quot; and &quot;reconnect count per session&quot; — these are your real health metrics.</li>
+<li><strong>Correlation:</strong> put <code>messageId</code> in both broker logs (via Rule → CloudWatch) and app logs so you can trace one order end-to-end.</li>
+<li>Keep IoT logging at WARN in prod, DEBUG only when diagnosing.</li>
+</ul>
+<hr>
+<h2 id="8-mqtt-in-real-delivery-apps-probable-architectures">8. MQTT in Real Delivery Apps (probable architectures)</h2><p>Public engineering material is thin and these are <em>informed inferences</em>, not confirmed internals — treat as &quot;how a staff engineer would expect it to be built,&quot; not gospel.</p>
+<ul>
+<li><strong>Uber:</strong> historically built bespoke real-time infra; their open-source <strong>Ringpop</strong>/edge stack and a custom protocol (RAMEN) for server-pushed updates are well documented in their eng blog era. The pattern: a persistent connection for live updates (trip state, driver location) + push for wakeups. Not classic MQTT, but the <em>same shape</em>: persistent pub/sub-ish channel + push fallback.</li>
+<li><strong>Swiggy / Zomato / Rapido / Dunzo:</strong> delivery-heavy Indian apps almost certainly run a <strong>hybrid</strong>: a persistent real-time channel (MQTT or WebSocket) for foreground order assignment + live tracking, and <strong>FCM high-priority data messages</strong> as the killed/background wakeup (essential given Indian Android OEM background-kill behavior). Order assignment is often <strong>server-driven with an accept timer</strong>, exactly the modal flow you&#39;re building. Location ingest is high-volume and typically lands in a stream (Kafka/Kinesis) behind the channel.</li>
+</ul>
+<h4 id="why-mqtt-may-or-may-not-be-used">Why MQTT may or may not be used</h4><ul>
+<li><strong>For MQTT:</strong> lowest battery/bytes on flaky networks (huge in India), built-in QoS/sessions/LWT, one connection many topics. Great fit for rider GPS + assignment.</li>
+<li><strong>Against / instead:</strong> some teams prefer <strong>WebSocket + their own framing</strong> (more control, easier to multiplex with existing HTTP infra, no IoT-broker lock-in), or <strong>gRPC streaming</strong>. At extreme GPS volume, managed MQTT cost pushes teams to self-hosted EMQX or a Kafka-fronted custom channel.</li>
+</ul>
+<h4 id="the-universal-pattern-whatever-the-wire-protocol">The universal pattern (whatever the wire protocol)</h4><pre class="code-block" data-lang="text"><code class="language-text">Foreground real-time channel (MQTT/WS)  →  instant assignment + live tracking
+        +  Push (FCM/APNs)              →  killed/background wakeup (mandatory)
+        +  REST                          →  reconcile state on resume / source of truth
+        +  Stream (Kafka/Kinesis)        →  location &amp; events for downstream systems</code></pre><p>You are building exactly the first leg correctly, with the second and third as planned fallbacks. That&#39;s the production shape.</p>
+<hr>
+<h2 id="9-migration-strategy-for-my-existing-app">9. Migration Strategy for My Existing App</h2><p>You already have notifications, modals, trip/order assignment flows, Redux, timers, real-time UI. The goal is to slot MQTT <em>under</em> the existing UI without rewriting it.</p>
+<h3 id="phased-minimal-risk-rollout">Phased, minimal-risk rollout</h3><ol>
+<li><strong>Phase 0 — Adapter behind a flag.</strong> Build the §4 service. It dispatches the <strong>same Redux actions</strong> your existing push/poll path already dispatches (<code>orderAssigned</code>, etc.). The UI doesn&#39;t know the source changed. Ship dark (flag off).</li>
+<li><strong>Phase 1 — Shadow mode (internal).</strong> Enable MQTT for internal/test riders. MQTT and the existing path both run; log discrepancies (did MQTT deliver the same order, faster?). No user impact.</li>
+<li><strong>Phase 2 — MQTT primary, push fallback (small %).</strong> For flagged users, MQTT drives foreground assignment; FCM still fires for killed-app. Dedup so a rider who gets both (MQTT + push) sees one modal. Watch metrics.</li>
+<li><strong>Phase 3 — Ramp.</strong> 1% → 5% → 25% → 100% by region (start outside your highest-volume city). Keep push fallback forever.</li>
+<li><strong>Phase 4 — Deprecate polling</strong> (if you had any) once MQTT+push proves out.</li>
+</ol>
+<h3 id="feature-flag-strategy">Feature-flag strategy</h3><ul>
+<li>Server-driven flag <code>mqtt_enabled</code> (per user/region/app-version), read at login.</li>
+<li><code>if (flags.mqtt_enabled) getMqttService().start(cfg)</code> — otherwise the old path runs untouched.</li>
+<li>Kill switch: flipping the flag off must cleanly <code>stop()</code> MQTT and fall back, no restart.</li>
+</ul>
+<h3 id="fallback-strategy">Fallback strategy</h3><ul>
+<li>MQTT down/erroring → status <code>offline</code> → <strong>FCM remains the delivery guarantee</strong>; optionally a low-frequency REST poll only while MQTT is unhealthy.</li>
+<li>Dedup across MQTT and FCM by <code>orderId</code>/<code>messageId</code>.</li>
+</ul>
+<h3 id="rollback-plan">Rollback plan</h3><ul>
+<li>Flag off → service stops, old path resumes. No app update needed.</li>
+<li>Because the service only emits the <strong>existing Redux actions</strong>, rollback is purely &quot;stop the new producer.&quot;</li>
+</ul>
+<h3 id="testing-plan">Testing plan</h3><ul>
+<li>Unit: <code>ReconnectManager</code> backoff math, <code>Dedup</code>, payload parsing/validation, topic builders.</li>
+<li>Integration: against local Mosquitto — connect, subscribe, receive, ACK, reconnect, persistent-session redelivery.</li>
+<li>E2E on device: airplane-mode reconnect, background→foreground, killed→FCM→open→reconcile, duplicate delivery.</li>
+<li>Load/soak: simulate N clients (MQTTX scripting or a Node loop) reconnecting with jitter; watch broker throttle metrics.</li>
+</ul>
+<h3 id="qa-checklist">QA checklist</h3><ul>
+<li><input disabled="" type="checkbox"> Connects on login; disconnects on logout (no leaked connection).</li>
+<li><input disabled="" type="checkbox"> Foreground receives order &lt; 1s after backend publish.</li>
+<li><input disabled="" type="checkbox"> Accept → backend sees ACK; reject/timeout → backend reassigns.</li>
+<li><input disabled="" type="checkbox"> Airplane mode 10s → reconnects, resubscribes, status correct.</li>
+<li><input disabled="" type="checkbox"> Order published during offline window arrives after reconnect (persistent session).</li>
+<li><input disabled="" type="checkbox"> Duplicate QoS1 delivery → exactly one modal.</li>
+<li><input disabled="" type="checkbox"> Expired order (past <code>expiresAt</code>) delivered late → ignored.</li>
+<li><input disabled="" type="checkbox"> Background → no battery-burning reconnect loop; FCM still wakes app.</li>
+<li><input disabled="" type="checkbox"> App killed → FCM wakes → open → reconnect → active order reconciled.</li>
+<li><input disabled="" type="checkbox"> No memory growth over a 1-hr soak (listeners/timers cleaned).</li>
+<li><input disabled="" type="checkbox"> Flag off → fully reverts to existing behavior.</li>
+</ul>
+<hr>
+<h2 id="10-final-deliverables">10. Final Deliverables</h2><h3 id="1-learning-summary">1) Learning summary</h3><p>MQTT is pub/sub over a persistent connection through a broker. For a rider app: <strong>QoS 1 + idempotency</strong> for orders, <strong>QoS 0</strong> for GPS, <strong>persistent session</strong> so tunnel-blips don&#39;t lose orders, <strong>LWT + retained status</strong> for presence, <strong>45–60s keep-alive</strong> for battery. AWS IoT Core is a good managed broker (no QoS 2; per-connection limits; metered cost). <strong>MQTT handles foreground real-time; FCM/APNs is mandatory for killed-app delivery; REST reconciles on resume.</strong> Hide the MQTT lib behind a transport adapter so WebSocket(POC)→native(prod) is a one-file swap.</p>
+<h3 id="2-implementation-checklist-the-45-hr-build">2) Implementation checklist (the 4–5 hr build)</h3><ul>
+<li><input disabled="" type="checkbox"> AWS IoT endpoint + thing + cert (or Cognito) + scoped policy; verify in MQTT test client.</li>
+<li><input disabled="" type="checkbox"> <code>@taoqf/react-native-mqtt</code> + NetInfo installed.</li>
+<li><input disabled="" type="checkbox"> Service layer from §4 (transport, managers, singleton, types, topics, dedup).</li>
+<li><input disabled="" type="checkbox"> Redux slice + bridge dispatching existing order actions.</li>
+<li><input disabled="" type="checkbox"> Backend <code>publishOrder.ts</code> via IoT Data Plane.</li>
+<li><input disabled="" type="checkbox"> E2E: assign → modal → accept → ACK observed.</li>
+<li><input disabled="" type="checkbox"> Reconnect + persistent-session test passes.</li>
+</ul>
+<h3 id="3-production-checklist">3) Production checklist</h3><ul>
+<li><input disabled="" type="checkbox"> Custom authorizer (JWT) replacing dev cert/Cognito.</li>
+<li><input disabled="" type="checkbox"> Scoped policy with <code>${iot:Connection.Thing.ThingName}</code>, no <code>#</code>.</li>
+<li><input disabled="" type="checkbox"> FCM/APNs fallback for killed/background; dedup across channels.</li>
+<li><input disabled="" type="checkbox"> Feature flag + kill switch + region ramp.</li>
+<li><input disabled="" type="checkbox"> Backoff+jitter; background reconnect disabled.</li>
+<li><input disabled="" type="checkbox"> Basic Ingest/Rules for telemetry; raise connect/connection quotas.</li>
+<li><input disabled="" type="checkbox"> CloudWatch alarms (AuthError, Throttle); app-side connect/reconnect analytics.</li>
+<li><input disabled="" type="checkbox"> Idempotent handlers; <code>ts</code>-based last-writer-wins; <code>expiresAt</code> enforced.</li>
+<li><input disabled="" type="checkbox"> Cost model reviewed (GPS frequency, 5KB metering).</li>
+</ul>
+<h3 id="4-debugging-checklist">4) Debugging checklist</h3><ul>
+<li><input disabled="" type="checkbox"> Silent connect fail → CloudWatch IoT DEBUG logs → which ARN/action denied.</li>
+<li><input disabled="" type="checkbox"> Subscribe no messages → <code>topicfilter/</code> vs <code>topic/</code>; topic casing.</li>
+<li><input disabled="" type="checkbox"> Connect→drop loop → duplicate clientId.</li>
+<li><input disabled="" type="checkbox"> Isolate device vs broker in MQTT test client.</li>
+<li><input disabled="" type="checkbox"> Watch topic tree in MQTT Explorer for stray/retained messages.</li>
+<li><input disabled="" type="checkbox"> Verify keep-alive/LWT timing if presence is wrong.</li>
+</ul>
+<h3 id="5-architecture-diagram-text">5) Architecture diagram (text)</h3><pre class="code-block" data-lang="text"><code class="language-text">[Rider App]──MQTT/WSS:443──▶[AWS IoT Core Broker]◀──HTTP publish──[Backend Assignment]
+     │  subscribes: driver/ID/orders, /commands           │
+     │  publishes:  /location(Q0) /ack(Q1) /status(retain) │
+     └─FCM data msg ◀───────────────────────[FCM/APNs]◀────┘ (killed-app fallback)
+[Broker]──Rules/Basic Ingest──▶[Kinesis/DynamoDB/Lambda]──▶ downstream + ops dashboard (driver/+/location)
+On resume: App──REST──▶Backend (reconcile active order)</code></pre><h3 id="6-mqtt-glossary">6) MQTT glossary</h3><p><strong>Broker</strong> central router. <strong>Topic</strong> <code>/</code>-path message channel. <strong>Publish/Subscribe</strong> send to / register interest in a topic. <strong>QoS 0/1/2</strong> at-most/at-least/exactly once (AWS = 0,1). <strong>Retained</strong> broker keeps last value for new subscribers. <strong>LWT</strong> message broker sends on ungraceful disconnect. <strong>Clean/Persistent session</strong> broker forgets / remembers subs + queues QoS1. <strong>Keep-alive</strong> ping interval + dead-client detection. <strong>Wildcards</strong> <code>+</code> one level, <code>#</code> multi (subscribe only). <strong>PUBACK</strong> MQTT-layer ack of a QoS1 publish. <strong>Client ID</strong> unique connection identity; duplicates kick each other. <strong>Basic Ingest</strong> AWS path that skips the pub/sub broker for cheaper ingest.</p>
+<h3 id="7-best-practices">7) Best practices</h3><ul>
+<li>Few topics, typed payloads. Scope every device to its own subtree.</li>
+<li>QoS1 + idempotency for orders; QoS0 for telemetry; no QoS2.</li>
+<li>Persistent session + stable clientId; retain state not events.</li>
+<li>Backoff + jitter; no background reconnect; disconnect when backgrounded.</li>
+<li>Hide the lib behind a transport adapter. Validate every inbound payload.</li>
+<li>Always pair with FCM (killed) and REST (reconcile). Carry <code>messageId</code>+<code>ts</code>+<code>expiresAt</code>.</li>
+</ul>
+<h3 id="8-common-mistakes">8) Common mistakes</h3><ul>
+<li>Expecting MQTT to deliver to a killed app. (It can&#39;t. Use FCM.)</li>
+<li>Retaining order events → ghost orders.</li>
+<li><code>topic/</code> instead of <code>topicfilter/</code> in Subscribe policy → silent no-messages.</li>
+<li>Duplicate clientId → reconnect death-loop.</li>
+<li>No jitter → fleet reconnect storm.</li>
+<li>Trusting QoS1 to be exactly-once (it&#39;s not) → double modals.</li>
+<li>Subscribing a device to <code>#</code>/another rider&#39;s topics → security + cost blowup.</li>
+<li>Tight reconnect loop while offline/background → battery + broker abuse.</li>
+<li>1Hz GPS at scale without cost modeling → surprise IoT bill.</li>
+</ul>
+<h3 id="9-interview-level-mqtt-questions">9) Interview-level MQTT questions</h3><ul>
+<li>Difference between QoS levels and why mobile rarely uses QoS 2? How do you get effective exactly-once?</li>
+<li>Clean vs persistent session — what does the broker store, and the clientId implications?</li>
+<li>How does LWT + keep-alive produce reliable presence?</li>
+<li>Why are retained messages dangerous for event topics?</li>
+<li>How do you prevent reconnect storms across a fleet?</li>
+<li>MQTT vs WebSocket vs FCM — when each, and why a rider app needs all three?</li>
+<li>How do you scope per-device authorization on a shared broker?</li>
+<li>What happens to QoS1 messages while a client is offline, and at what rate are they redelivered?</li>
+<li>Why publish from the backend via HTTP API rather than a held MQTT connection?</li>
+<li>How do you handle out-of-order status transitions?</li>
+</ul>
+<h3 id="10-next-steps-for-your-actual-codebase">10) Next steps for your actual codebase</h3><ol>
+<li>Drop the <code>src/services/mqtt/</code> module in behind your existing Redux actions (don&#39;t touch UI).</li>
+<li>Add <code>mqtt_enabled</code> flag; start the service after login only when on.</li>
+<li>Stand up the custom authorizer reusing your existing JWT verifier.</li>
+<li>Wire FCM high-priority data messages as the killed-app path; dedup with MQTT by <code>orderId</code>.</li>
+<li>Add CloudWatch alarms + app-side reconnect analytics before any real ramp.</li>
+<li>Run a soak test, then ramp by region starting away from your busiest city.</li>
+<li>Revisit the GPS-cost model; if it bites, evaluate Basic Ingest tuning, then EMQX.</li>
+</ol>
+<hr>
+<p><em>Build the POC on the WebSocket transport + a dev cert/Cognito to get a green connection fast, prove the assign→accept→reconnect loop, then graduate auth (custom authorizer), transport (native client for battery), and the FCM/REST safety net for production. The service interface stays the same the whole way.</em></p>
+    </article>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<script>
+(function(){
+  var content = document.getElementById('content');
+
+  /* ---- wrap tables for horizontal scroll ---- */
+  content.querySelectorAll('table').forEach(function(t){
+    var w = document.createElement('div'); w.className = 'table-wrap';
+    t.parentNode.insertBefore(w, t); w.appendChild(t);
+  });
+
+  /* ---- build TOC from h2 ---- */
+  var toc = document.getElementById('toc');
+  var heads = Array.prototype.slice.call(content.querySelectorAll('h2'));
+  heads.forEach(function(h){
+    var li = document.createElement('li');
+    var a = document.createElement('a');
+    a.href = '#' + h.id;
+    var m = h.textContent.match(/^\s*(\d+)\.\s*(.*)$/);
+    var num = m ? m[1] : '';
+    var label = m ? m[2] : h.textContent;
+    a.innerHTML = '<span class="num">' + (num ? (num.length<2?'0'+num:num) : '·') + '</span><span>' + label + '</span>';
+    a.dataset.target = h.id;
+    li.appendChild(a); toc.appendChild(li);
+    a.addEventListener('click', closeMenu);
+  });
+
+  /* ---- scroll-spy ---- */
+  var links = {};
+  toc.querySelectorAll('a').forEach(function(a){ links[a.dataset.target] = a; });
+  var spy = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        Object.values(links).forEach(function(l){ l.classList.remove('active'); });
+        var l = links[e.target.id]; if(l) l.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -78% 0px', threshold: 0 });
+  heads.forEach(function(h){ spy.observe(h); });
+
+  /* ---- progress bar ---- */
+  var bar = document.getElementById('progress');
+  function onScroll(){
+    var st = window.scrollY || document.documentElement.scrollTop;
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (h>0 ? (st/h*100) : 0) + '%';
+  }
+  window.addEventListener('scroll', onScroll, { passive:true }); onScroll();
+
+  /* ---- mobile menu ---- */
+  var sidebar = document.getElementById('sidebar');
+  var scrim = document.getElementById('scrim');
+  function closeMenu(){ sidebar.classList.remove('open'); scrim.classList.remove('open'); }
+  document.getElementById('menu-btn').addEventListener('click', function(){
+    sidebar.classList.toggle('open'); scrim.classList.toggle('open');
+  });
+  scrim.addEventListener('click', closeMenu);
+
+  /* ---- syntax highlight (progressive enhancement) ---- */
+  if(window.hljs){
+    content.querySelectorAll('pre.code-block code').forEach(function(b){
+      try{ hljs.highlightElement(b); }catch(e){}
+    });
+  }
+
+  /* ---- mermaid (progressive enhancement) ---- */
+  if(window.mermaid){
+    try{
+      mermaid.initialize({
+        startOnLoad:false,
+        theme:'base',
+        themeVariables:{
+          fontFamily:'JetBrains Mono, monospace',
+          primaryColor:'#f3ede0',
+          primaryTextColor:'#1a1712',
+          primaryBorderColor:'#c2451d',
+          lineColor:'#7a6f5c',
+          secondaryColor:'#ece4d3',
+          tertiaryColor:'#f3ede0',
+          clusterBkg:'#ece4d3',
+          clusterBorder:'#c3b596'
+        }
+      });
+      mermaid.run({ querySelector:'.mermaid' });
+    }catch(e){}
+  }
+})();
+</script>
+</body>
+</html>

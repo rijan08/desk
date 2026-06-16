@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>desk — a small shelf of documents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e1216;
+    --bg2:#141a20;
+    --card:#171e25;
+    --card2:#1c252e;
+    --line:#2a353f;
+    --line2:#36444f;
+    --ink:#e7eef3;
+    --ink-dim:#a7b6c2;
+    --ink-faint:#6f8190;
+    --amber:#e9a23b;
+    --teal:#54d6a6;
+    --rose:#f0776b;
+    --violet:#a99bff;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --sans:'IBM Plex Sans',system-ui,sans-serif;
+    --serif:'Fraunces',Georgia,serif;
+    --maxw:920px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:var(--sans);font-size:16px;line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(900px 500px at 88% -8%, rgba(233,162,59,.10), transparent 60%),
+      radial-gradient(700px 500px at -5% 8%, rgba(84,214,166,.07), transparent 55%);
+    background-attachment:fixed;
+  }
+  a{color:var(--teal);text-decoration:none;transition:.15s;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
+
+  /* hero */
+  .hero{padding:74px 0 30px;border-bottom:1px solid var(--line);margin-bottom:8px;
+    background:linear-gradient(180deg, rgba(233,162,59,.05), transparent);}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--amber);margin-bottom:16px;}
+  h1{font-family:var(--serif);font-weight:700;font-size:clamp(40px,8vw,72px);line-height:1;margin:0 0 18px;letter-spacing:-1px;}
+  h1 em{font-style:italic;color:var(--amber);}
+  .lede{font-size:17px;color:var(--ink-dim);max-width:560px;}
+  .lede b{color:var(--ink);font-weight:600;}
+
+  /* controls */
+  .controls{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin:26px 0 6px;padding:14px 0;
+    position:sticky;top:0;z-index:5;background:linear-gradient(180deg,var(--bg) 70%,transparent);}
+  .search{flex:1;min-width:220px;display:flex;align-items:center;gap:10px;
+    background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;}
+  .search:focus-within{border-color:var(--line2);}
+  .search svg{flex-shrink:0;opacity:.6;}
+  #filter{flex:1;background:none;border:none;outline:none;color:var(--ink);font-family:var(--sans);font-size:15px;}
+  #filter::placeholder{color:var(--ink-faint);}
+  .count{font-family:var(--mono);font-size:12px;letter-spacing:.5px;color:var(--ink-faint);white-space:nowrap;}
+  .count b{color:var(--teal);}
+
+  /* group */
+  .group{margin:38px 0 0;}
+  .group-head{display:flex;align-items:baseline;gap:12px;margin-bottom:4px;}
+  .group-head h2{font-family:var(--serif);font-weight:600;font-size:24px;letter-spacing:-.3px;margin:0;color:var(--ink);}
+  .group-head .gcount{font-family:var(--mono);font-size:11px;letter-spacing:1px;color:var(--ink-faint);}
+  .group-rule{height:1px;background:linear-gradient(90deg,var(--line),transparent);margin:10px 0 18px;}
+
+  /* card grid */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+  .card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);
+    border-radius:12px;padding:18px 18px 16px;transition:.15s;position:relative;overflow:hidden;}
+  .card::before{content:"";position:absolute;top:0;left:0;width:100%;height:2px;
+    background:var(--accent,var(--teal));opacity:.7;transform:translateY(-2px);transition:.15s;}
+  .card:hover{border-color:var(--line2);transform:translateY(-2px);background:var(--card2);}
+  .card:hover::before{transform:translateY(0);}
+  .card .ctag{font-family:var(--mono);font-size:10px;letter-spacing:1.4px;text-transform:uppercase;
+    color:var(--accent,var(--teal));margin-bottom:10px;}
+  .card h3{font-family:var(--serif);font-weight:600;font-size:19px;line-height:1.2;margin:0 0 8px;color:var(--ink);letter-spacing:-.2px;}
+  .card p{font-size:13.5px;color:var(--ink-dim);margin:0 0 14px;flex:1;line-height:1.5;}
+  .card .meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;}
+  .card .meta span{font-family:var(--mono);font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;
+    background:#0a0e12;border:1px solid var(--line2);color:var(--ink-faint);padding:2px 7px;border-radius:5px;}
+  .card .go{position:absolute;top:16px;right:16px;color:var(--ink-faint);opacity:0;transition:.15s;}
+  .card:hover .go{opacity:1;color:var(--accent,var(--teal));}
+
+  /* empty states */
+  .empty{font-family:var(--mono);font-size:13px;color:var(--ink-faint);
+    border:1px dashed var(--line2);border-radius:10px;padding:18px 20px;}
+  #noresults{display:none;text-align:center;font-family:var(--mono);font-size:13px;color:var(--ink-faint);padding:50px 0;}
+
+  .footer{margin:70px 0 60px;font-family:var(--mono);font-size:11px;color:var(--ink-faint);text-align:center;letter-spacing:.5px;}
+  .footer a{color:var(--ink-faint);border-bottom:1px solid var(--line);}
+  .footer a:hover{color:var(--teal);border-bottom-color:var(--teal);}
+
+  @media(max-width:640px){
+    .hero{padding:52px 0 26px;}
+    .grid{grid-template-columns:1fr;}
+    .controls{flex-direction:column;align-items:stretch;}
+    .count{align-self:flex-end;}
+  }
+</style>
+</head>
+<body>
+
+  <header class="hero">
+    <div class="wrap">
+      <div class="kicker">Personal documents · always a work in progress</div>
+      <h1><em>desk</em></h1>
+      <p class="lede">A small shelf of things I'm writing, learning, and keeping. <b>Search to narrow it down.</b></p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="controls">
+      <label class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="filter" type="text" placeholder="Filter entries…" autocomplete="off" spellcheck="false">
+      </label>
+      <div class="count"><b id="shown">0</b> / <span id="total">0</span> entries</div>
+    </div>
+
+    <div id="board"><!-- groups render here --></div>
+    <div id="noresults">No entries match that filter.</div>
+  </main>
+
+  <div class="footer">
+    desk · <a href="https://github.com/rijan08/desk">github.com/rijan08/desk</a> · served with GitHub Pages
+  </div>
+
+<script>
+  /* ──────────────────────────────────────────────────────────────
+     ENTRIES — to add a doc: create  <slug>/index.html  then add an
+     object below.  url has NO trailing ".html" (clean URL).
+     accent: teal | amber | violet | rose
+     ────────────────────────────────────────────────────────────── */
+  const ENTRIES = [
+    {
+      category: "Learning",
+      title: "React Native Mastery Roadmap",
+      url: "react-native-roadmap",
+      desc: "A leverage-resequenced roadmap from “it works” to “I know why” — JS internals, React, RN architecture, performance, and the path to senior.",
+      accent: "amber",
+      tags: ["react native", "roadmap", "career"]
+    },
+    {
+      category: "Learning",
+      title: "MQTT Rider App Field Manual",
+      url: "mqtt-rider-app",
+      desc: "Production MQTT for a React Native rider app — broker/topic/QoS model, live location, reconnection, and battery trade-offs.",
+      accent: "teal",
+      tags: ["mqtt", "react native", "real-time"]
+    },
+    // ── Personal ──────────────────────────────────────────────────
+    // { category: "Personal", title: "…", url: "…", desc: "…", accent: "violet", tags: ["…"] },
+  ];
+
+  /* Category order + display config. A category listed here always
+     shows its heading, even when empty. */
+  const CATEGORIES = ["Learning", "Personal"];
+  // ── Writing (enable later) ──────────────────────────────────────
+  // CATEGORIES.push("Writing");
+
+  const ACCENTS = {teal:"var(--teal)", amber:"var(--amber)", violet:"var(--violet)", rose:"var(--rose)"};
+  const board = document.getElementById("board");
+  const totalEl = document.getElementById("total");
+  const shownEl = document.getElementById("shown");
+  const noResults = document.getElementById("noresults");
+
+  // Build the DOM once.
+  CATEGORIES.forEach(cat => {
+    const items = ENTRIES.filter(e => e.category === cat);
+    const group = document.createElement("section");
+    group.className = "group";
+    group.dataset.category = cat;
+
+    const head = document.createElement("div");
+    head.className = "group-head";
+    head.innerHTML = '<h2>' + cat + '</h2><span class="gcount" data-gcount></span>';
+    group.appendChild(head);
+
+    const rule = document.createElement("div");
+    rule.className = "group-rule";
+    group.appendChild(rule);
+
+    if (items.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "empty";
+      empty.textContent = "Nothing here yet.";
+      group.appendChild(empty);
+    } else {
+      const grid = document.createElement("div");
+      grid.className = "grid";
+      items.forEach(e => {
+        const a = document.createElement("a");
+        a.className = "card";
+        a.href = e.url;
+        a.style.setProperty("--accent", ACCENTS[e.accent] || ACCENTS.teal);
+        a.dataset.search = (e.title + " " + e.desc + " " + (e.tags||[]).join(" ") + " " + e.category).toLowerCase();
+        a.innerHTML =
+          '<span class="ctag">' + e.category + '</span>' +
+          '<span class="go"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg></span>' +
+          '<h3>' + e.title + '</h3>' +
+          '<p>' + e.desc + '</p>' +
+          '<div class="meta">' + (e.tags||[]).map(t => '<span>' + t + '</span>').join("") + '</div>';
+        grid.appendChild(a);
+      });
+      group.appendChild(grid);
+    }
+    board.appendChild(group);
+  });
+
+  totalEl.textContent = ENTRIES.length;
+
+  // Live filter + counts.
+  const input = document.getElementById("filter");
+  function apply() {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    document.querySelectorAll(".group").forEach(group => {
+      const cards = group.querySelectorAll(".card");
+      let groupShown = 0;
+      cards.forEach(card => {
+        const match = !q || card.dataset.search.includes(q);
+        card.style.display = match ? "" : "none";
+        if (match) { shown++; groupShown++; }
+      });
+      const gc = group.querySelector("[data-gcount]");
+      if (gc) gc.textContent = groupShown ? groupShown + (groupShown === 1 ? " entry" : " entries") : "";
+      // When filtering, hide groups with no matching cards (keep empties visible only when no query).
+      const hasCards = cards.length > 0;
+      group.style.display = (q && groupShown === 0 && hasCards) ? "none" : (q && !hasCards ? "none" : "");
+    });
+    shownEl.textContent = shown;
+    noResults.style.display = (shown === 0 && q) ? "block" : "none";
+  }
+  input.addEventListener("input", apply);
+  apply();
+</script>
+</body>
+</html>

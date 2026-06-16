@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>React Native Mastery Roadmap — Personalized</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e1216;
+    --bg2:#141a20;
+    --card:#171e25;
+    --card2:#1c252e;
+    --line:#2a353f;
+    --line2:#36444f;
+    --ink:#e7eef3;
+    --ink-dim:#a7b6c2;
+    --ink-faint:#6f8190;
+    --amber:#e9a23b;
+    --teal:#54d6a6;
+    --rose:#f0776b;
+    --violet:#a99bff;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --sans:'IBM Plex Sans',system-ui,sans-serif;
+    --serif:'Fraunces',Georgia,serif;
+    --maxw:880px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:var(--sans);font-size:16px;line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(900px 500px at 88% -8%, rgba(233,162,59,.10), transparent 60%),
+      radial-gradient(700px 500px at -5% 8%, rgba(84,214,166,.07), transparent 55%);
+    background-attachment:fixed;
+  }
+  a{color:var(--teal);text-decoration:none;border-bottom:1px solid rgba(84,214,166,.32);transition:.15s;}
+  a:hover{color:#86e7c3;border-bottom-color:var(--teal);}
+  code{font-family:var(--mono);font-size:.85em;background:#0a0e12;border:1px solid var(--line);padding:.08em .4em;border-radius:5px;color:var(--amber);}
+  pre{background:#080b0e;border:1px solid var(--line);border-left:3px solid var(--violet);border-radius:10px;padding:16px 18px;overflow-x:auto;margin:14px 0;}
+  pre code{background:none;border:none;color:#d7e2ea;padding:0;font-size:13.5px;line-height:1.7;}
+
+  /* layout */
+  .layout{display:grid;grid-template-columns:288px minmax(0,1fr);gap:0;}
+  /* sidebar */
+  .toc{font-family:var(--mono);}
+  .toc-inner{position:fixed;top:0;left:0;width:288px;height:100vh;overflow-y:auto;
+    padding:30px 22px;border-right:1px solid var(--line);background:rgba(10,14,18,.72);backdrop-filter:blur(8px);}
+  .toc summary{display:none;}
+  .toc-brand{font-family:var(--serif);font-size:18px;color:var(--ink);letter-spacing:.2px;margin-bottom:4px;line-height:1.25;}
+  .toc-brand b{color:var(--amber);font-weight:600;}
+  .toc-sub{font-size:11px;color:var(--ink-faint);letter-spacing:.5px;text-transform:uppercase;margin-bottom:22px;}
+  .toc nav a{display:block;font-size:12.5px;color:var(--ink-dim);padding:5px 10px;border:none;border-radius:6px;letter-spacing:.2px;}
+  .toc nav a:hover{background:var(--card2);color:var(--ink);}
+  .toc nav a.active{background:linear-gradient(90deg,rgba(233,162,59,.16),transparent);color:var(--amber);border-left:2px solid var(--amber);padding-left:8px;}
+  .toc nav .grp{font-size:10px;text-transform:uppercase;letter-spacing:1.4px;color:var(--ink-faint);margin:18px 0 6px 10px;}
+
+  .main{padding:0 0 120px;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px;}
+
+  /* hero */
+  .hero{padding:74px 0 40px;border-bottom:1px solid var(--line);margin-bottom:42px;
+    background:linear-gradient(180deg, rgba(233,162,59,.05), transparent);}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--amber);margin-bottom:18px;}
+  h1{font-family:var(--serif);font-weight:700;font-size:clamp(34px,6vw,58px);line-height:1.04;margin:0 0 22px;letter-spacing:-.5px;}
+  h1 em{font-style:italic;color:var(--amber);}
+  .lede{font-size:17px;color:var(--ink-dim);max-width:640px;}
+  .lede b{color:var(--ink);font-weight:600;}
+  .profile-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px;}
+  .chip{font-family:var(--mono);font-size:11.5px;color:var(--ink-dim);background:var(--card);border:1px solid var(--line);
+    padding:6px 11px;border-radius:20px;}
+  .chip b{color:var(--teal);font-weight:500;}
+
+  h2{font-family:var(--serif);font-weight:600;font-size:30px;letter-spacing:-.3px;margin:64px 0 6px;scroll-margin-top:28px;}
+  h2 .num{font-family:var(--mono);font-size:13px;color:var(--amber);font-weight:500;display:block;letter-spacing:2px;margin-bottom:6px;}
+  h3{font-family:var(--sans);font-weight:700;font-size:16px;margin:28px 0 8px;color:var(--ink);letter-spacing:.2px;}
+  h3.tag{display:inline-flex;align-items:center;gap:8px;}
+  p{margin:12px 0;}
+  .section-divider{height:1px;background:linear-gradient(90deg,var(--line),transparent);margin:8px 0 0;}
+
+  .why{border-left:3px solid var(--amber);background:linear-gradient(90deg,rgba(233,162,59,.07),transparent);
+    padding:12px 18px;border-radius:0 8px 8px 0;margin:16px 0;font-size:15px;}
+  .why b{color:var(--amber);}
+
+  ul,ol{margin:12px 0;padding-left:22px;}
+  li{margin:7px 0;}
+
+  /* resource list */
+  .res{list-style:none;padding:0;margin:14px 0;}
+  .res li{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);
+    border-radius:10px;padding:12px 14px;margin:8px 0;}
+  .res li:hover{border-color:var(--line2);}
+  .rank{font-size:15px;flex-shrink:0;line-height:1.5;width:18px;text-align:center;}
+  .res .body{flex:1;min-width:0;}
+  .res .rname{font-weight:600;color:var(--ink);}
+  .res .desc{font-size:13.5px;color:var(--ink-dim);margin-top:2px;}
+  .fmt{display:inline-flex;gap:5px;flex-wrap:wrap;margin-left:7px;vertical-align:middle;}
+  .fmt span{font-family:var(--mono);font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;
+    background:#0a0e12;border:1px solid var(--line2);color:var(--ink-faint);padding:2px 6px;border-radius:5px;}
+  .fmt .free{color:var(--teal);border-color:rgba(84,214,166,.4);}
+  .fmt .paid{color:var(--amber);border-color:rgba(233,162,59,.4);}
+
+  /* checkpoint card */
+  .check{background:var(--card2);border:1px solid var(--line2);border-radius:12px;padding:18px 20px;margin:22px 0;
+    position:relative;}
+  .check::before{content:"✅ CHECKPOINT";font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--teal);}
+  .check ul{margin:12px 0 0;}
+  .check .flag{color:var(--rose);}
+  .check b{color:var(--ink);}
+
+  .keybox{background:#080b0e;border:1px dashed var(--line2);border-radius:10px;padding:14px 16px;margin:14px 0;font-size:14.5px;}
+  .keybox .lab{font-family:var(--mono);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--violet);display:block;margin-bottom:6px;}
+
+  /* tables */
+  .tablewrap{overflow-x:auto;margin:18px 0;}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:520px;}
+  th,td{text-align:left;padding:10px 13px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{font-family:var(--mono);font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--amber);border-bottom-color:var(--line2);}
+  tbody tr:hover{background:rgba(255,255,255,.015);}
+  td b{color:var(--ink);}
+  .phase-p1{color:var(--amber);} .phase-p2{color:var(--teal);} .phase-p3{color:var(--violet);}
+  .phase-p4{color:#7fb4ff;} .phase-p5{color:var(--rose);}
+
+  /* plan blocks */
+  .plan{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0;}
+  .plan h4{margin:0 0 8px;font-family:var(--mono);font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--amber);}
+
+  .legend{display:flex;flex-wrap:wrap;gap:18px;font-size:13px;color:var(--ink-dim);margin:14px 0;
+    background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;}
+  .legend b{color:var(--ink);}
+
+  .callout{border:1px solid var(--line2);border-radius:12px;padding:18px 20px;margin:20px 0;background:linear-gradient(135deg,rgba(169,155,255,.07),transparent);}
+  .callout.warn{background:linear-gradient(135deg,rgba(240,119,107,.08),transparent);border-color:rgba(240,119,107,.35);}
+  .callout b{color:var(--ink);}
+
+  .end-note{margin-top:60px;border-top:1px solid var(--line);padding-top:30px;}
+  .footer{margin-top:60px;font-family:var(--mono);font-size:11px;color:var(--ink-faint);text-align:center;letter-spacing:.5px;}
+
+  @media(max-width:1000px){
+    .layout{grid-template-columns:1fr;}
+    .toc-inner{position:sticky;top:0;width:auto;height:auto;border-right:none;border-bottom:1px solid var(--line);}
+    .toc summary{display:block;font-family:var(--mono);font-size:12px;letter-spacing:1px;color:var(--amber);cursor:pointer;padding:4px 0;text-transform:uppercase;}
+    .toc nav{margin-top:14px;}
+    .hero{padding:48px 0 32px;}
+  }
+  @media(min-width:1001px){
+    .toc details{open:true;}
+    .toc nav{display:block!important;}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="toc">
+    <div class="toc-inner">
+      <div class="toc-brand">React Native <b>Mastery</b> Roadmap</div>
+      <div class="toc-sub">Personalized · v1</div>
+      <details open>
+        <summary>Contents</summary>
+        <nav id="toc-nav">
+          <a href="#how">How to use this</a>
+          <a href="#diagnosis">Your diagnosis</a>
+          <a href="#phases">Phase sequencing</a>
+          <div class="grp">Phase 1 — Models</div>
+          <a href="#l1">L1 · JavaScript Internals</a>
+          <a href="#l0">L0 · CS Foundations</a>
+          <a href="#l3">L3 · React Internals</a>
+          <div class="grp">Phase 2 — Type Safety</div>
+          <a href="#l2">L2 · TypeScript</a>
+          <div class="grp">Phase 3 — The Platform</div>
+          <a href="#l4">L4 · RN Internals</a>
+          <a href="#l8">L8 · Native Android</a>
+          <a href="#l6">L6 · Performance</a>
+          <div class="grp">Phase 4 — Building Big</div>
+          <a href="#l5">L5 · Advanced RN</a>
+          <a href="#l7">L7 · System Design</a>
+          <div class="grp">Phase 5 — Seniority</div>
+          <a href="#l9">L9 · Senior Skills</a>
+          <a href="#l10">L10 · Staff Path</a>
+          <div class="grp">Verify & Plan</div>
+          <a href="#verify">Master verification</a>
+          <a href="#time">Time estimation</a>
+          <a href="#plans">Study plans</a>
+          <a href="#final">Final note</a>
+        </nav>
+      </details>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <header class="hero">
+      <div class="wrap">
+        <div class="kicker">Engineering Roadmap · Built for you</div>
+        <h1>From "it works" to <em>I know why</em>.</h1>
+        <p class="lede">A roadmap resequenced by leverage for <b>your</b> specific gaps and trimmed so you can actually finish it at one hour a day. Not a generic curriculum.</p>
+        <div class="profile-chips">
+          <span class="chip">~4 yrs RN</span>
+          <span class="chip"><b>Android</b> only (iOS later)</span>
+          <span class="chip">touches native code</span>
+          <span class="chip">migrating off the <b>old bridge</b></span>
+          <span class="chip">1 hour / day</span>
+          <span class="chip">video → build learner</span>
+          <span class="chip">goal: <b>senior + architect</b></span>
+        </div>
+      </div>
+    </header>
+
+    <div class="wrap">
+
+      <!-- HOW TO USE -->
+      <section id="how">
+        <h2><span class="num">// START</span>How to use this document</h2>
+        <ol>
+          <li><b>Do not do all levels at once.</b> Follow the phase order. Finish a level's checkpoint before moving on.</li>
+          <li><b>Every level has a "Verify mastery" test.</b> If you can't pass it, you haven't finished — re-do, don't skip.</li>
+          <li><b>Video-first is fine.</b> Where a topic is video-friendly the best video is marked. Where only docs/reading will do, it says so and tells you what to build so it sticks.</li>
+          <li><b>Measure, don't guess.</b> The recurring theme of your roadmap: stop swapping things until the symptom goes away; learn to <em>prove</em> the cause. This habit alone moves you toward senior.</li>
+        </ol>
+
+        <div class="legend">
+          <span><span class="rank">🔴</span> <b>Must Learn</b> — non-negotiable</span>
+          <span><span class="rank">🟡</span> <b>Good to Learn</b> — if time allows</span>
+          <span><span class="rank">⚪</span> <b>Optional</b> — reference / depth / later</span>
+        </div>
+        <p style="font-size:13.5px;color:var(--ink-faint)"><b style="color:var(--ink-dim)">Note:</b> per your request, all book recommendations have been removed — every resource here is a video, doc, article, course, or repo, with a direct link.</p>
+      </section>
+
+      <!-- DIAGNOSIS -->
+      <section id="diagnosis">
+        <h2><span class="num">// DIAGNOSIS</span>Your diagnosis (one page)</h2>
+        <p><b>Profile:</b> Pattern-matched engineer. You know the <em>moves</em> (Redux, custom hooks, FlashList, removing janky animations) without the <em>models</em> underneath. Fixable — and faster for you than a beginner, because you have real situations to attach theory to.</p>
+        <h3>Confirmed gaps (from your answers)</h3>
+        <ul>
+          <li>No mental model for process/thread, JS thread vs UI thread → can't reason about <em>why</em> things are slow.</li>
+          <li>Event loop / micro vs macrotasks → unknown (got the puzzle partly wrong).</li>
+          <li>Closures, GC, prototypes, hoisting → blank.</li>
+          <li>TypeScript → near-zero (1/5).</li>
+          <li>React internals (reconciliation, render triggers, hooks rules) → surface only.</li>
+          <li>RN architecture (bridge/JSI/Fabric/TurboModules/Hermes) → blank — <em>and your team is migrating, so this is urgent.</em></li>
+          <li>Security misconception: thinks Redux = token storage (it isn't).</li>
+          <li>Performance: fixes by guessing-and-swapping, never measures. No profiler ever opened.</li>
+          <li>Senior skills (RFC, RCA, reviews-with-rationale) → none yet.</li>
+        </ul>
+        <h3>Strengths to build on</h3>
+        <p>Ships production code, touches native (rare and valuable), honest self-assessment, already uses Redux and custom hooks in anger.</p>
+        <div class="callout">
+          <b>The three things blocking your title:</b> (1) no first-principles models, (2) you guess instead of measure, (3) zero design/communication reps. The roadmap targets all three.
+        </div>
+      </section>
+
+      <!-- PHASES -->
+      <section id="phases">
+        <h2><span class="num">// SEQUENCE</span>Phase sequencing</h2>
+        <p>Do them in <b>this</b> order — not by level number. CS foundations (L0) are threaded <em>under</em> JavaScript, not done as a cold standalone block: you learn "what's a thread" at the moment you learn why RN has a JS thread.</p>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Phase</th><th>Levels</th><th>Why this order</th><th>Months @ 1hr/day</th></tr></thead>
+            <tbody>
+              <tr><td><b class="phase-p1">1 — Models</b></td><td>L1 JS → L3 React → (L0 threaded under)</td><td>Where your daily pain lives. Fixes "I don't know why."</td><td>~3.5</td></tr>
+              <tr><td><b class="phase-p2">2 — Type safety</b></td><td>L2 TypeScript</td><td>Cheap, fast ROI, makes everything after safer.</td><td>~1.5</td></tr>
+              <tr><td><b class="phase-p3">3 — The platform</b></td><td>L4 RN internals → L8 Android → L6 Performance</td><td>Timely (migration). Native + perf are your weakest practical areas.</td><td>~4</td></tr>
+              <tr><td><b class="phase-p4">4 — Building big</b></td><td>L5 Advanced RN → L7 System design</td><td>Now you can architect, not just feature-build.</td><td>~4</td></tr>
+              <tr><td><b class="phase-p5">5 — Seniority</b></td><td>L9 Senior → L10 Staff (ongoing)</td><td>Knowledge is necessary but not sufficient — these earn the title.</td><td>ongoing</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- LEVEL 1 -->
+      <section id="l1">
+        <h2><span class="num">// LEVEL 1 · PHASE 1</span>JavaScript Internals <span style="font-size:13px;color:var(--teal);font-family:var(--mono)">START HERE</span></h2>
+        <div class="why"><b>Why for you:</b> Every "it works but I don't know why" moment traces back here. Highest-leverage level. Do it first.</div>
+        <h3>Topics (in order)</h3>
+        <p>Execution context → scope &amp; scope chain → hoisting → closures → <code>this</code> &amp; binding → prototypes vs classes → the call stack → the event loop → microtasks vs macrotasks → Promises → async/await → memory management &amp; garbage collection → modules (ESM vs CommonJS) → a little functional programming (map/filter/reduce, immutability, pure functions).</p>
+        <h3>Resources</h3>
+        <ul class="res">
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://www.youtube.com/playlist?list=PLlasXeu85E9cQ32gLCvAvr9vNaUccPVNP">Akshay Saini — Namaste JavaScript</a><span class="fmt"><span>video</span><span class="free">free</span></span><div class="desc">The single best video series for exactly your gap (execution context, hoisting, closures, event loop, call stack). India-friendly pacing. Watch all of Season 1.</div></div></li>
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://javascript.info/">javascript.info</a><span class="fmt"><span>doc</span><span class="free">free</span></span><div class="desc">The modern JS reference. Read "Fundamentals," "Closures," "Promises/async-await," "Prototypes." Do the exercises at the bottom of each page — they're the point.</div></div></li>
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://lydiahallie.com/blog/event-loop">Lydia Hallie — JavaScript Visualized</a><span class="fmt"><span>article</span><span>video</span><span class="free">free</span></span><div class="desc">Animated explanations of the event loop, promises, hoisting, scope chain — exactly your learning style. (<a href="https://dev.to/lydiahallie/series/3341">full series</a>)</div></div></li>
+          <li><span class="rank">🟡</span><div class="body"><a class="rname" href="https://www.youtube.com/watch?v=cCOL7MC4Pl0">Jake Archibald — "In the Loop" (JSConf)</a><span class="fmt"><span>video</span><span class="free">free</span></span><div class="desc">The definitive event-loop mental model: tasks vs microtasks vs requestAnimationFrame.</div></div></li>
+        </ul>
+        <h3>Exercises</h3>
+        <ol>
+          <li>Predict the output of 10 event-loop puzzles (mix <code>setTimeout</code>, <code>Promise.then</code>, <code>async/await</code>) <em>before</em> running them. Check with Lydia Hallie's visualizer.</li>
+          <li>Write a <code>once(fn)</code> and a <code>debounce(fn, ms)</code> from scratch using closures. (<code>debounce</code> is literally what you need for search inputs.)</li>
+          <li>Build a promise-based <code>retry(fn, times)</code> helper — reused later for flaky network calls.</li>
+        </ol>
+        <h3>Mini project</h3>
+        <p>Re-implement a small piece of your real app's data-fetching as a hand-written <code>useFetch</code> hook (loading/error/data, cancellation on unmount) <b>without copying</b> — using closures, promises, and cleanup you now understand.</p>
+        <div class="check">
+          <ul>
+            <li><b>You should know:</b> walk through <code>console.log(1); setTimeout(…,0); Promise.resolve().then(…); console.log(4)</code> and explain why the order is <code>1, 4, 3, 2</code> — all sync runs first (1, 4), then microtasks drain (Promise → 3), then the next macrotask (timer → 2). Explain a closure + one real bug it caused (stale-closure-in-useEffect). Explain why a heavy <code>for</code> loop freezes the UI.</li>
+            <li><b>You should build:</b> the <code>useFetch</code> hook + <code>debounce</code> from memory.</li>
+            <li><b>Common mistakes:</b> thinking <code>setTimeout(0)</code> runs immediately or loops forever; thinking <code>async</code> makes code parallel (it doesn't — still single-threaded).</li>
+            <li class="flag"><b>🚩 Red flags you're not done:</b> still can't predict event-loop order without running it; "closure" is a vocab word, not a tool.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- LEVEL 0 -->
+      <section id="l0">
+        <h2><span class="num">// LEVEL 0 · threaded under L1</span>CS Foundations</h2>
+        <div class="why"><b>Why for you:</b> You answered "I don't know" to process/thread and the fetch lifecycle. Without these, Level 4 and all of performance become memorization. Learn the <em>minimum useful slice</em> now — you don't need an OS degree.</div>
+        <h3>The slice that matters for RN</h3>
+        <ul>
+          <li><b>Process vs thread.</b> A process = your app with its own memory. A thread = a line of execution inside it. RN runs your JS on <b>one thread</b> (JS thread) and the UI on <b>another</b> (main/UI thread). <em>That's why a heavy loop in JS freezes the screen — the UI thread is fine, it's waiting on the frozen JS thread.</em> This sentence is the foundation of all RN performance reasoning.</li>
+          <li><b>CPU / RAM / storage.</b> RAM = fast, volatile, where the running app lives (and where leaks bloat). Storage = slow, persistent (AsyncStorage, SQLite, Keystore). The speed gap explains why you cache and why disk reads block.</li>
+          <li><b>Networking — what happens on <code>fetch()</code>.</b> DNS (name → IP) → TCP handshake → TLS handshake (the "S" in HTTPS — encryption) → HTTP request/response → JSON parse. Every network bug lives in one of these layers.</li>
+          <li><b>HTTP/HTTPS</b> — status codes, headers, methods, idempotency (why GET is safe to retry but POST often isn't — ties to your retry helper).</li>
+          <li><b>Android architecture (high level):</b> Linux kernel → ART runtime → app process → Activities. Enough for Levels 4 and 8.</li>
+        </ul>
+        <h3>Resources</h3>
+        <ul class="res">
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://www.youtube.com/results?search_query=what+happens+when+you+type+a+url+dns+tcp+tls+http">"What happens when you type a URL"</a><span class="fmt"><span>video</span><span class="free">free</span></span><div class="desc">Pick a 15–20 min animated one. Covers DNS → TCP → TLS → HTTP end to end.</div></div></li>
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://developer.mozilla.org/en-US/docs/Web/HTTP">MDN — Overview of HTTP</a><span class="fmt"><span>article</span><span class="free">free</span></span><div class="desc">Read "An overview of HTTP" and "Evolution of HTTP."</div></div></li>
+          <li><span class="rank">🟡</span><div class="body"><a class="rname" href="https://www.youtube.com/results?search_query=process+vs+thread+explained">Process vs thread explained</a><span class="fmt"><span>video</span><span class="free">free</span></span><div class="desc">Any solid 10-min CS channel (Computerphile or similar).</div></div></li>
+        </ul>
+        <h3>Exercise</h3>
+        <p>Open Android Studio's network profiler (or your dev tools) on your real app, fire one API call, and <b>narrate every layer out loud</b>: DNS, TCP, TLS, request, response, parse. If you can't, you're not done.</p>
+        <div class="check">
+          <ul>
+            <li><b>Know:</b> process vs thread → JS thread vs UI thread; the full <code>fetch</code> lifecycle.</li>
+            <li class="flag"><b>🚩 Red flag:</b> you still describe <code>fetch</code> as "it calls the endpoint and returns a response" with no layers underneath.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- LEVEL 3 -->
+      <section id="l3">
+        <h2><span class="num">// LEVEL 3 · PHASE 1</span>React Internals</h2>
+        <div class="why"><b>Why for you:</b> You said re-renders are caused by "state updates" (incomplete) and you don't know reconciliation. This layer between JS and RN is where most of your real confusion lives.</div>
+        <h3>Topics</h3>
+        <p>What triggers a render (the <em>full</em> list) → reconciliation &amp; the fiber tree → keys &amp; list diffing (and the index-as-key bug) → <code>useState</code> vs <code>useRef</code> → <code>useEffect</code> dependency model &amp; cleanup → stale closures in effects → <code>useMemo</code>/<code>useCallback</code> (and when they do nothing) → <code>React.memo</code> → Context (and why it can cause mass re-renders) → custom hooks → the rules of hooks (and <em>why</em> call-order matters).</p>
+        <div class="keybox"><span class="lab">The render-trigger list (memorize)</span>A component re-renders when: (1) its own state changes, (2) its props change, (3) its parent re-renders, (4) a Context value it consumes changes, (5) a hook it uses triggers an update. <b>You only named #1.</b></div>
+        <h3>Resources</h3>
+        <ul class="res">
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://overreacted.io/a-complete-guide-to-useeffect/">Dan Abramov — A Complete Guide to useEffect</a><span class="fmt"><span>article</span><span class="free">free</span></span><div class="desc">Will fix more of your daily bugs than anything else here. Read it twice.</div></div></li>
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://react.dev/learn">react.dev "Learn" track</a><span class="fmt"><span>doc</span><span class="free">free</span></span><div class="desc">Specifically <a href="https://react.dev/learn/render-and-commit">Render and Commit</a>, <a href="https://react.dev/learn/state-as-a-snapshot">State as a Snapshot</a>, <a href="https://react.dev/learn/referencing-values-with-refs">Referencing Values with Refs</a>, <a href="https://react.dev/learn/you-might-not-need-an-effect">You Might Not Need an Effect</a>. Directly hit your gaps.</div></div></li>
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://www.youtube.com/results?search_query=react+reconciliation+fiber+explained">React reconciliation / fiber explained</a><span class="fmt"><span>video</span><span class="free">free</span></span><div class="desc">Understand: React builds a tree, diffs old vs new, and <code>key</code> tells it which item is which so it doesn't destroy &amp; rebuild your list rows (or lose their state).</div></div></li>
+          <li><span class="rank">🟡</span><div class="body"><a class="rname" href="https://overreacted.io/before-you-memo/">Dan Abramov — Before You memo()</a><span class="fmt"><span>article</span><span class="free">free</span></span><div class="desc">Plus <a href="https://overreacted.io/why-do-react-hooks-rely-on-call-order/">Why Do Hooks Rely on Call Order</a> (answers the "why same order every render" question).</div></div></li>
+          <li><span class="rank">🟡</span><div class="body"><a class="rname" href="https://www.youtube.com/@jherr">Jack Herrington</a><span class="fmt"><span>video</span><span class="free">free</span></span><div class="desc">Practical React internals &amp; performance, very video-learner-friendly.</div></div></li>
+          <li><span class="rank">⚪</span><div class="body"><a class="rname" href="https://pomb.us/build-your-own-react/">Build Your Own React (Rodrigo Pombo)</a><span class="fmt"><span>article</span><span>repo</span><span class="free">free</span></span><div class="desc">Deep optional — implement a tiny React to truly get fiber.</div></div></li>
+        </ul>
+        <h3>Exercises</h3>
+        <ol>
+          <li>Build a list with <code>index</code> as key, then reorder/delete items and watch state attach to the wrong row. Fix it with stable IDs. <em>Now you understand the key bug.</em></li>
+          <li>Add <code>useMemo</code>/<code>useCallback</code>, then measure with the React DevTools Profiler whether anything changed. Find a case where it helped and a case where it was pure overhead.</li>
+          <li>Reproduce a stale-closure bug in <code>useEffect</code> (missing dependency) and fix it three ways: add the dep, use a ref, use the functional updater.</li>
+        </ol>
+        <h3>Mini project</h3>
+        <p>Take one screen that "re-renders too much," open the Profiler, find the cause, and fix it <em>with a measured before/after.</em> Write down what you changed and why.</p>
+        <div class="check">
+          <ul>
+            <li><b>Know:</b> the 5 render triggers; why hooks must be same-order each render; what reconciliation does; the index-as-key bug; one real case where <code>useMemo</code> is useless.</li>
+            <li><b>Build:</b> the measured re-render fix above.</li>
+            <li><b>Common mistakes:</b> <code>useCallback</code> everywhere "for performance"; derived data in state; missing effect dependencies.</li>
+            <li class="flag"><b>🚩 Red flags:</b> still reach for <code>useEffect</code> to sync state that could be computed during render; can't explain why a list "lost its input text" on reorder.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- LEVEL 2 -->
+      <section id="l2">
+        <h2><span class="num">// LEVEL 2 · PHASE 2</span>TypeScript</h2>
+        <div class="why"><b>Why for you:</b> You're a 1/5 and this is the cheapest, fastest win on the whole list. It makes every later level safer and is table-stakes for senior.</div>
+        <h3>Topics</h3>
+        <p>Basic types → <code>interface</code> vs <code>type</code> → unions &amp; literal types → discriminated unions → generics → utility types (<code>Partial</code>, <code>Pick</code>, <code>Omit</code>, <code>Record</code>, <code>Required</code>) → <code>keyof</code> / indexed access → type narrowing &amp; guards → typing props, hooks, navigation params, and API responses → <code>unknown</code> vs <code>any</code> (and why <code>any</code> is a code smell).</p>
+        <h3>Resources</h3>
+        <ul class="res">
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://www.typescriptlang.org/docs/handbook/intro.html">TypeScript Handbook (official)</a><span class="fmt"><span>doc</span><span class="free">free</span></span><div class="desc">Read "Everyday Types," "Narrowing," "Generics."</div></div></li>
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://www.totaltypescript.com/">Total TypeScript — Matt Pocock</a><span class="fmt"><span>course</span><span class="free">free tier</span><span class="paid">paid</span></span><div class="desc">Best TS teacher alive, very practical. Free tutorials + the paid course if you want one paid resource on this list. (Also his <a href="https://www.youtube.com/@mattpocockuk">YouTube</a> shorts.)</div></div></li>
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://react-typescript-cheatsheet.netlify.app/">react-typescript-cheatsheet</a><span class="fmt"><span>doc</span><span>repo</span><span class="free">free</span></span><div class="desc">Exactly how to type React/RN components, hooks, and context.</div></div></li>
+          <li><span class="rank">🟡</span><div class="body"><a class="rname" href="https://github.com/type-challenges/type-challenges">type-challenges</a><span class="fmt"><span>repo</span><span class="free">free</span></span><div class="desc">Do the "warm" and "easy" ones only. Skip the insane ones.</div></div></li>
+        </ul>
+        <div class="keybox"><span class="lab">Discriminated union — learn this pattern</span>
+<pre><code>type FetchState&lt;T&gt; =
+  | { status: 'loading' }
+  | { status: 'error'; error: string }
+  | { status: 'success'; data: T };</code></pre>
+        The correct way to model your screen states — TS forces you to handle every case, killing a whole class of "undefined is not an object" crashes you ship today.</div>
+        <h3>Exercises</h3>
+        <ol>
+          <li>Convert one real <code>.js</code> file in your app to <code>.tsx</code>, no <code>any</code> allowed.</li>
+          <li>Write a generic <code>useFetch&lt;T&gt;()</code> returning the <code>FetchState&lt;T&gt;</code> union above.</li>
+          <li>Type your React Navigation param list properly (typed routes + <code>useRoute&lt;…&gt;</code>).</li>
+        </ol>
+        <div class="check">
+          <ul>
+            <li><b>Know:</b> when to use <code>type</code> vs <code>interface</code>; what a discriminated union is and where you'd use one; what a generic is.</li>
+            <li><b>Build:</b> a fully-typed <code>useFetch&lt;T&gt;</code> and typed navigation.</li>
+            <li class="flag"><b>🚩 Red flag:</b> still reaching for <code>any</code> or <code>as</code> to silence the compiler instead of modeling the type.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- LEVEL 4 -->
+      <section id="l4">
+        <h2><span class="num">// LEVEL 4 · PHASE 3</span>React Native Internals <span style="font-size:13px;color:var(--rose);font-family:var(--mono)">TIMELY</span></h2>
+        <div class="why"><b>Why for you:</b> Blank (1/5) <em>and</em> your app is moving off the old bridge. As of April 2026, RN 0.85 removed the bridge entirely (0.76 made the New Architecture default; 0.82 disabled the old one). You touch native code, so this is core to your value.</div>
+        <h3>Topics</h3>
+        <ul>
+          <li><b>Old architecture — the Bridge:</b> JS thread and native thread communicated <b>asynchronously over a bridge, serializing everything to JSON.</b> That serialization + async round-trip was the bottleneck. Heavy data or frequent calls = lag.</li>
+          <li><b>New architecture — four pillars:</b>
+            <ul>
+              <li><b>JSI (JavaScript Interface):</b> lets JS hold <em>direct references</em> to C++/native objects and call them <b>synchronously</b> — no JSON, no bridge.</li>
+              <li><b>Fabric:</b> the new rendering system; concurrent; UI stays responsive during heavy JS.</li>
+              <li><b>TurboModules:</b> native modules loaded lazily and called via JSI (replaces old async native modules).</li>
+              <li><b>Codegen:</b> generates the type-safe glue between JS and native from your specs.</li>
+            </ul>
+          </li>
+          <li><b>Hermes:</b> the default JS engine; ahead-of-time bytecode → faster startup, lower memory. The New Architecture depends on it.</li>
+          <li><b>Native modules &amp; native UI components:</b> how JS reaches Android (Kotlin/Java). You've done this "only with AI" — now learn the actual shape.</li>
+          <li><b>Threading model:</b> JS thread, UI/main thread, native modules thread, and (Reanimated) the UI thread running worklets.</li>
+        </ul>
+        <h3>Resources</h3>
+        <ul class="res">
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://reactnative.dev/architecture/landing-page">reactnative.dev — The New Architecture</a><span class="fmt"><span>doc</span><span class="free">free</span></span><div class="desc">The authoritative, current source. Read "Why a New Architecture" and the pillars pages.</div></div></li>
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://github.com/reactwg/react-native-new-architecture">New Architecture Working Group</a><span class="fmt"><span>repo</span><span class="free">free</span></span><div class="desc">GitHub discussions — the most reliable community source for migration issues (directly useful for your team's move).</div></div></li>
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://reactnative.directory/">reactnative.directory</a><span class="fmt"><span>doc</span><span class="free">free</span></span><div class="desc">Audit your app's dependencies for New-Arch compatibility — real work you can do at your job.</div></div></li>
+          <li><span class="rank">🟡</span><div class="body"><a class="rname" href="https://blog.swmansion.com/">Software Mansion blog</a> &amp; <a href="https://www.callstack.com/blog">Callstack blog</a><span class="fmt"><span>blog</span><span class="free">free</span></span><div class="desc">The deepest RN-internals writing available.</div></div></li>
+          <li><span class="rank">🟡</span><div class="body"><a class="rname" href="https://www.youtube.com/results?search_query=react+native+new+architecture+explained+2026">"RN New Architecture explained" (recent talk)</a><span class="fmt"><span>video</span><span class="free">free</span></span><div class="desc">Make sure it's post-0.76. Then build one TurboModule (Kotlin) following a recent tutorial — <em>without</em> AI this time.</div></div></li>
+          <li><span class="rank">⚪</span><div class="body"><a class="rname" href="https://github.com/facebook/react-native">react-native source (ReactCommon/)</a><span class="fmt"><span>repo</span><span class="free">free</span></span><div class="desc">For the truly curious.</div></div></li>
+        </ul>
+        <h3>Exercises</h3>
+        <ol>
+          <li>Check your app: is the New Architecture flag on? (<code>newArchEnabled</code> in <code>gradle.properties</code>.) Report your RN version + whether bridgeless is enabled.</li>
+          <li>Write a minimal Kotlin native module returning the device battery level — old-style first, then as a TurboModule. Feel the difference.</li>
+          <li>Audit 5 native dependencies for New-Arch compatibility via reactnative.directory.</li>
+        </ol>
+        <div class="check">
+          <ul>
+            <li><b>Know:</b> the bridge bottleneck (JSON serialization + async); what JSI, Fabric, TurboModules, Codegen each replace; what Hermes does; the threads in an RN app.</li>
+            <li><b>Build:</b> one Kotlin native module + a dependency-compatibility audit of your real app.</li>
+            <li class="flag"><b>🚩 Red flags:</b> can't say which architecture your own production app runs; "JSI" is a buzzword you can't unpack.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- LEVEL 8 -->
+      <section id="l8">
+        <h2><span class="num">// LEVEL 8 · PHASE 3 (Android slice)</span>Native Android for RN Engineers</h2>
+        <div class="why"><b>Why for you:</b> You touch native code and are Android-only. You don't need to be an Android dev — you need to debug native crashes and write modules. iOS deferred per your plan.</div>
+        <h3>The slice that matters</h3>
+        <ul>
+          <li><b>Kotlin basics</b> — enough to read/write a native module and follow a stack trace.</li>
+          <li><b>Activity &amp; lifecycle</b> (<code>onCreate</code>/<code>onResume</code>/<code>onPause</code>/<code>onStop</code>/<code>onDestroy</code>) — <em>why your app loses state in the background</em>: the OS can kill a backgrounded process and recreate the Activity; un-persisted state is gone. Directly relevant to a delivery app holding an active order.</li>
+          <li><b>Services &amp; WorkManager</b> — background &amp; deferred work (e.g., syncing completed deliveries when network returns).</li>
+          <li><b>Broadcast Receivers</b> — reacting to system events (connectivity, boot).</li>
+          <li><b>Permissions, manifest, foreground services</b> — live location tracking needs a foreground service.</li>
+        </ul>
+        <h3>Resources</h3>
+        <ul class="res">
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://developer.android.com/courses/android-basics-compose/course">Android Basics with Compose (Google)</a><span class="fmt"><span>course</span><span class="free">free</span></span><div class="desc">Do only the Kotlin-language + lifecycle units.</div></div></li>
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://developer.android.com/guide/components/activities/activity-lifecycle">Android docs — Activity lifecycle</a><span class="fmt"><span>doc</span><span class="free">free</span></span><div class="desc">Plus <a href="https://developer.android.com/topic/libraries/architecture/workmanager">WorkManager</a> and the background-work guide.</div></div></li>
+          <li><span class="rank">🟡</span><div class="body"><a class="rname" href="https://www.youtube.com/@PhilippLackner">Philipp Lackner</a><span class="fmt"><span>video</span><span class="free">free</span></span><div class="desc">Excellent, fast Kotlin/Android for people who already code.</div></div></li>
+        </ul>
+        <h3>Exercise</h3>
+        <p>Read a real native stack trace from your crash reporting (Crashlytics/Sentry) and explain it line by line. If you can't, you're not done.</p>
+        <div class="check">
+          <ul>
+            <li><b>Know:</b> the Activity lifecycle and why backgrounded apps lose state; what WorkManager is for; how to read a Kotlin stack trace.</li>
+            <li class="flag"><b>🚩 Red flag:</b> native crashes are still "black boxes" you escalate without understanding.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- LEVEL 6 -->
+      <section id="l6">
+        <h2><span class="num">// LEVEL 6 · PHASE 3</span>Performance Engineering <span style="font-size:13px;color:var(--rose);font-family:var(--mono)">YOUR BIGGEST PRACTICAL GAP</span></h2>
+        <div class="why"><b>Why for you:</b> You've <em>never opened a profiler</em> and you fix by guessing. The senior difference isn't more tricks — it's <b>measuring before and after.</b> This is where you stop guessing.</div>
+        <h3>Topics</h3>
+        <ul>
+          <li><b>Three threads &amp; the frame budget:</b> 60fps = ~16ms/frame. Drop a frame → jank. <em>Diagnose which thread is the culprit:</em> JS-thread jank (heavy logic, slow renders) vs UI-thread jank (heavy native layout/animation).</li>
+          <li><b>Profiling tools:</b> React DevTools Profiler (re-renders), Hermes profiler (JS), Android Studio Profiler (CPU/memory/network), Perfetto/systrace (frame-level).</li>
+          <li><b>Re-render storms</b> (from L3) — measure, don't assume.</li>
+          <li><b>Memory leaks:</b> retained listeners, timers not cleared, closures holding references. Find them with the memory profiler.</li>
+          <li><b>Startup / cold-start:</b> Hermes, inline requires, lazy screens, reducing JS bundle parse time.</li>
+          <li><b>Lists:</b> <em>why</em> FlashList beats FlatList (cell recycling) — you reach for it but didn't know the mechanism.</li>
+          <li><b>Animations:</b> why a JS-driven animation drops frames and a UI-thread (Reanimated worklet) one doesn't — <em>that's the whole point of worklets: they run on the UI thread so they don't wait on a busy JS thread.</em></li>
+        </ul>
+        <h3>Resources</h3>
+        <ul class="res">
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://reactnative.dev/docs/performance">reactnative.dev — Performance &amp; Profiling</a><span class="fmt"><span>doc</span><span class="free">free</span></span><div class="desc">Read the Performance and <a href="https://reactnative.dev/docs/profiling">Profiling</a> sections.</div></div></li>
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://www.youtube.com/@wcandillon">William Candillon — "Can it be done in React Native?"</a><span class="fmt"><span>video</span><span class="free">free</span></span><div class="desc">Animation/perf depth, worklets, gestures — your exact weak spot, in video form.</div></div></li>
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://www.youtube.com/results?search_query=react+native+performance+profiling+2025">"RN performance profiling" (recent)</a><span class="fmt"><span>video</span><span class="free">free</span></span><div class="desc">Plus the <a href="https://shopify.engineering/">Shopify</a> &amp; <a href="https://www.callstack.com/blog">Callstack</a> performance case studies — real, measured, "how seniors debug."</div></div></li>
+          <li><span class="rank">🟡</span><div class="body"><a class="rname" href="https://shopify.github.io/flash-list/">FlashList docs (Shopify)</a><span class="fmt"><span>doc</span><span class="free">free</span></span><div class="desc">Read <em>how</em> recycling works, not just the API.</div></div></li>
+          <li><span class="rank">🟡</span><div class="body"><a class="rname" href="https://docs.swmansion.com/react-native-reanimated/">Reanimated docs — worklets</a><span class="fmt"><span>doc</span><span class="free">free</span></span><div class="desc">To nail why worklets run on the UI thread.</div></div></li>
+        </ul>
+        <h3>Case-study exercises (the core of this level)</h3>
+        <ol>
+          <li><b>Reproduce, measure, fix, re-measure.</b> Take your "janky animation." This time: open the profiler, identify JS vs UI thread, <em>prove</em> it, fix it (likely a Reanimated worklet), and show before/after frame numbers. <b>No removing the animation as a "fix" this time.</b></li>
+          <li>Find a real memory leak: mount/unmount a screen 20× and watch memory in Android Studio. If it climbs and never drops, hunt the un-cleared listener/timer.</li>
+          <li>Measure your cold start, cut it (lazy screens / inline requires), re-measure.</li>
+        </ol>
+        <div class="check">
+          <ul>
+            <li><b>Know:</b> how to tell JS-thread vs UI-thread jank; why worklets run on the UI thread; why FlashList recycles.</li>
+            <li><b>Build:</b> three <em>measured</em> before/after fixes (animation, leak, startup).</li>
+            <li><b>Common mistakes:</b> "optimizing" without measuring; assuming re-renders are the problem when it's a slow native layout.</li>
+            <li class="flag"><b>🚩 Red flags:</b> still can't open a single profiler; fixes are still "I removed the thing that seemed slow."</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- LEVEL 5 -->
+      <section id="l5">
+        <h2><span class="num">// LEVEL 5 · PHASE 4</span>Advanced React Native</h2>
+        <div class="why"><b>Why for you:</b> This is where your delivery-app domain makes everything concrete. You've done almost none of this hands-on (offline = never, MQTT = incomplete, security = Redux-confused).</div>
+        <h3>Topics &amp; what to actually learn</h3>
+        <ul>
+          <li><b>Navigation:</b> React Navigation — <b>JS stack vs native stack.</b> Native stack (<code>@react-navigation/native-stack</code>) uses the platform's native navigation primitives → better performance and native gestures/transitions; JS stack is implemented in JS → more customizable, historically slower. Learn when to use which.</li>
+          <li><b>Deep linking &amp; universal links</b> — opening a specific order from a notification/URL.</li>
+          <li><b>Offline-first architecture:</b> local source of truth (SQLite / WatermelonDB / MMKV), optimistic updates, a sync queue, and <b>conflict resolution</b> on reconnect (last-write-wins vs server-authoritative vs CRDTs). Core senior skill — start here.</li>
+          <li><b>Background processing</b> — foreground service for live location, WorkManager for deferred sync.</li>
+          <li><b>Push notifications</b> — FCM, notification vs data messages, handling taps → deep link.</li>
+          <li><b>Real-time (MQTT):</b> HTTP = request/response, client pulls. WebSockets = persistent full-duplex TCP, either side pushes. <b>MQTT</b> = a lightweight <b>pub/sub</b> protocol (often over TCP/WebSocket) for many low-bandwidth, intermittently-connected clients — <em>ideal for fleets of delivery riders publishing location.</em> Learn the broker/topic/QoS model.</li>
+          <li><b>Security:</b> tokens in <b>Keystore-backed</b> storage (<code>react-native-keychain</code>), <em>not</em> Redux/AsyncStorage; TLS &amp; certificate pinning; biometrics; encryption at rest; app integrity (Play Integrity); obfuscation.</li>
+          <li><b>OTA updates:</b> Expo Updates / CodePush ship JS-bundle + asset changes only; <b>cannot</b> change native code, permissions, or native dependencies — those need a store release.</li>
+          <li><b>Monitoring:</b> Sentry/Crashlytics, breadcrumbs, source maps, performance traces.</li>
+        </ul>
+        <h3>Resources</h3>
+        <ul class="res">
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://reactnavigation.org/docs/native-stack-navigator">React Navigation — Native Stack vs Stack</a><span class="fmt"><span>doc</span><span class="free">free</span></span><div class="desc">Read the native-stack vs JS-stack comparison.</div></div></li>
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://watermelondb.dev/">WatermelonDB</a> · <a href="https://github.com/mrousavy/react-native-mmkv">MMKV</a> · <a href="https://github.com/oblador/react-native-keychain">react-native-keychain</a><span class="fmt"><span>doc</span><span class="free">free</span></span><div class="desc">Offline storage + correct secure token storage.</div></div></li>
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://www.hivemq.com/mqtt-essentials/">HiveMQ — MQTT Essentials</a><span class="fmt"><span>article</span><span class="free">free</span></span><div class="desc">Best MQTT explainer anywhere. Plus <a href="https://mqtt.org/getting-started/">mqtt.org Getting Started</a>. Finally finish what you started.</div></div></li>
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://www.youtube.com/results?search_query=offline+first+react+native+architecture+sync">Offline-first RN architecture (talks/articles)</a><span class="fmt"><span>video</span><span>article</span><span class="free">free</span></span><div class="desc">Watch/read 2–3 real write-ups on sync queues + conflict resolution.</div></div></li>
+          <li><span class="rank">🟡</span><div class="body"><a class="rname" href="https://rnfirebase.io/messaging/usage">RN Firebase — Messaging (FCM)</a><span class="fmt"><span>doc</span><span class="free">free</span></span><div class="desc">Plus <a href="https://notifee.app/">Notifee</a> for rich local notifications.</div></div></li>
+          <li><span class="rank">🟡</span><div class="body"><a class="rname" href="https://owasp.org/www-project-mobile-top-10/">OWASP Mobile Top 10</a><span class="fmt"><span>doc</span><span class="free">free</span></span><div class="desc">The security checklist seniors are expected to know.</div></div></li>
+        </ul>
+        <h3>Projects</h3>
+        <ol>
+          <li><b>Offline-first order list:</b> a screen that works fully offline, queues actions, and syncs on reconnect with a clear conflict rule. (The most senior-signaling project on this list for your domain.)</li>
+          <li><b>Live location demo:</b> rider publishes location over MQTT (or WebSocket); a "customer" screen subscribes and renders the marker moving. Maps directly to your work.</li>
+          <li><b>Secure auth flow:</b> login → token in Keychain → biometric unlock → cert-pinned API call.</li>
+        </ol>
+        <div class="check">
+          <ul>
+            <li><b>Know:</b> JS vs native stack; offline sync + conflict strategies; MQTT vs WebSocket vs HTTP and when each fits; correct token storage; OTA limits.</li>
+            <li><b>Build:</b> the offline order list + live-location demo.</li>
+            <li class="flag"><b>🚩 Red flags:</b> you'd still put a token in Redux; can't describe what happens to queued actions when the app is killed mid-sync.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- LEVEL 7 -->
+      <section id="l7">
+        <h2><span class="num">// LEVEL 7 · PHASE 4</span>Mobile System Design</h2>
+        <div class="why"><b>Why for you:</b> 0/5 here — and this is what "architect" <em>means.</em> Your delivery domain is the perfect playground (Swiggy / Zomato / Uber / Rapido / Amazon delivery).</div>
+        <h3>Topics</h3>
+        <ul>
+          <li>Large-scale structure: feature modules, layering (UI / domain / data), dependency direction.</li>
+          <li><b>Offline sync at scale</b> (builds on L5): outbox pattern, idempotency keys, server-authoritative reconciliation.</li>
+          <li><b>Real-time order systems:</b> rider device → ingestion → fan-out → customer device. Latency, batching, backpressure.</li>
+          <li><b>State at scale:</b> when Redux stops scaling — split server-state (TanStack Query) from client-state (Zustand/Redux Toolkit), normalization, cache invalidation.</li>
+          <li><b>Analytics &amp; event-driven architecture:</b> event schemas, batching, offline event queues.</li>
+          <li><b>Micro-frontend / modularization</b> for super-apps.</li>
+          <li><b>The senior decision muscle:</b> every choice is a trade-off (consistency vs availability, battery vs freshness, complexity vs flexibility). <em>State the trade-off, not just the answer.</em></li>
+        </ul>
+        <div class="keybox"><span class="lab">Live order tracking — the first 3 decisions a senior makes</span>
+          <b>1. Transport &amp; cadence:</b> WebSocket/MQTT push vs polling; how often location updates (battery vs freshness); batching.<br>
+          <b>2. Source of truth &amp; offline behavior:</b> local cache as source of truth, optimistic UI, what shows when the connection drops.<br>
+          <b>3. Render strategy:</b> keep map-marker updates off the JS thread / out of React re-renders (native-driven animation), so high-frequency updates don't cause frame drops.<br>
+          <span style="color:var(--ink-faint);font-size:13px">(You named "a library" and "reduce lag" — now you have the actual decision framework.)</span>
+        </div>
+        <h3>Resources</h3>
+        <ul class="res">
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://www.uber.com/blog/engineering/">Uber Engineering blog</a> · <a href="https://bytes.swiggy.com/">Swiggy Bytes</a> · <a href="https://doordash.engineering/">DoorDash Engineering</a><span class="fmt"><span>article</span><span class="free">free</span></span><div class="desc">Real systems in your exact domain — search "real-time location," "delivery architecture."</div></div></li>
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://tanstack.com/query/latest">TanStack Query</a> + <a href="https://zustand.docs.pmnd.rs/">Zustand</a><span class="fmt"><span>doc</span><span class="free">free</span></span><div class="desc">The modern server-state vs client-state split.</div></div></li>
+          <li><span class="rank">🟡</span><div class="body"><a class="rname" href="https://www.youtube.com/results?search_query=mobile+system+design+interview+walkthrough">Mobile system design walkthroughs</a><span class="fmt"><span>video</span><span class="free">free</span></span><div class="desc">For structure, even though your goal isn't interviews.</div></div></li>
+          <li><span class="rank">⚪</span><div class="body"><a class="rname" href="https://github.com/jhen0409/react-native-debugger">Browse a large open-source RN app</a><span class="fmt"><span>repo</span><span class="free">free</span></span><div class="desc">Study real module structure (or any sizeable RN repo you admire).</div></div></li>
+        </ul>
+        <h3>Architecture challenges (write a 1-page design doc each)</h3>
+        <ol>
+          <li>Design live order tracking end-to-end (use the 3 decisions + trade-offs).</li>
+          <li>Redesign your app's state if it 5×'d: split server vs client state, normalize, define cache invalidation — not just "delete unused state."</li>
+          <li>Design an offline analytics pipeline that loses no events when the app is killed.</li>
+        </ol>
+        <div class="check">
+          <ul>
+            <li><b>Know:</b> state a real trade-off for every decision; the server-state vs client-state split; the live-tracking pipeline.</li>
+            <li><b>Build:</b> three one-page design docs.</li>
+            <li class="flag"><b>🚩 Red flags:</b> designs are feature lists with no trade-offs; "scale" means "delete unused state" rather than rethinking data flow.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- LEVEL 9 -->
+      <section id="l9">
+        <h2><span class="num">// LEVEL 9 · PHASE 5</span>Senior Engineer Skills <span style="font-size:13px;color:var(--teal);font-family:var(--mono)">START NOW, IN PARALLEL</span></h2>
+        <div class="why"><b>Why for you:</b> 0–1/5 across the board — and <em>this is what earns the title.</em> Knowledge alone won't. Begin these at work immediately; they don't wait for the other levels.</div>
+        <h3>Topics &amp; how to practice</h3>
+        <ul>
+          <li><b>Code review:</b> you currently look at "syntax, null checks, clean code." Level up to: correctness, edge cases, performance implications, API/contract design, testability, and whether the change matches the intent. Always leave the <em>why</em>, not just the <em>what</em>.</li>
+          <li><b>Technical design docs / RFCs:</b> learn the standard shape — Context → Problem → Goals/Non-goals → Options considered → Decision + trade-offs → Risks → Rollout. Write one for your next non-trivial feature.</li>
+          <li><b>Root-cause analysis:</b> distinguish symptom from cause; use "5 Whys"; write a blameless post-mortem (what happened, timeline, root cause, fix, prevention).</li>
+          <li><b>Debugging strategy:</b> form a hypothesis, make it falsifiable, bisect, <em>prove</em> the cause — the same "measure don't guess" muscle from L6.</li>
+          <li><b>Mentoring &amp; influence:</b> explaining trade-offs, writing things down so they scale beyond you.</li>
+        </ul>
+        <h3>Resources</h3>
+        <ul class="res">
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://google.github.io/eng-practices/review/">Google — Code Review Developer Guide</a><span class="fmt"><span>article</span><span class="free">free</span></span><div class="desc">The industry-standard reference for what good review looks like.</div></div></li>
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://www.industrialempathy.com/posts/design-docs-at-google/">Design Docs at Google</a><span class="fmt"><span>article</span><span class="free">free</span></span><div class="desc">The canonical "how to write a technical design doc" template.</div></div></li>
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://sre.google/sre-book/postmortem-culture/">Google SRE — Postmortem Culture</a><span class="fmt"><span>article</span><span class="free">free</span></span><div class="desc">Plus <a href="https://response.pagerduty.com/after/post_mortem_process/">PagerDuty's post-mortem process</a> — blameless RCA templates.</div></div></li>
+          <li><span class="rank">🟡</span><div class="body"><a class="rname" href="https://staffeng.com/guides/">StaffEng guides (Will Larson)</a><span class="fmt"><span>article</span><span class="free">free</span></span><div class="desc">Free guides on operating at senior/staff level (also seeds L10).</div></div></li>
+        </ul>
+        <h3>Assignments (do at your actual job)</h3>
+        <ol>
+          <li>Write one design doc this month and get it reviewed.</li>
+          <li>On your next bug, write a 1-paragraph RCA separating symptom from root cause (an incident analysis, not a JS fact).</li>
+          <li>In your next 5 code reviews, leave at least one comment explaining a <em>trade-off</em>, not a style nit.</li>
+        </ol>
+        <div class="check">
+          <ul>
+            <li><b>Know:</b> the design-doc structure; symptom vs root cause; what a good review comment looks like.</li>
+            <li><b>Build:</b> one design doc, one RCA, a habit of trade-off-level review comments.</li>
+            <li class="flag"><b>🚩 Red flags:</b> your "RCA" is still "what fixed it" with no "why it happened"; reviews are still all style.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- LEVEL 10 -->
+      <section id="l10">
+        <h2><span class="num">// LEVEL 10 · PHASE 5</span>Staff Path <span style="font-size:13px;color:var(--ink-faint);font-family:var(--mono)">HORIZON · ONGOING</span></h2>
+        <div class="why"><b>Why for you:</b> 18+ months out and depends as much on org scope as knowledge. Keep it on the radar; don't front-load it.</div>
+        <h3>What it actually is</h3>
+        <p>System thinking across teams; technical strategy and multi-quarter vision; influence without authority; architecture governance (standards, paved roads); raising the level of engineers around you; making the <em>organization</em> better, not just the code.</p>
+        <h3>Resources</h3>
+        <ul class="res">
+          <li><span class="rank">🔴</span><div class="body"><a class="rname" href="https://staffeng.com/">StaffEng.com (Will Larson)</a><span class="fmt"><span>article</span><span class="free">free</span></span><div class="desc">Free stories and guides from people who made the jump.</div></div></li>
+          <li><span class="rank">🟡</span><div class="body"><a class="rname" href="https://lethain.com/">Irrational Exuberance (Will Larson's blog)</a><span class="fmt"><span>article</span><span class="free">free</span></span><div class="desc">Long-form writing on engineering strategy and scaling.</div></div></li>
+        </ul>
+        <h3>How you'll know you're on it</h3>
+        <p>You're solving problems no one assigned you, your designs influence other teams, and your impact is measured in what <em>others</em> shipped because of you. Revisit this in ~18 months.</p>
+      </section>
+
+      <!-- VERIFY -->
+      <section id="verify">
+        <h2><span class="num">// VERIFY</span>The master verification test</h2>
+        <p>Beyond per-level checkpoints, you've reached <b>senior</b> when you can — from memory, out loud, in under 5 minutes each:</p>
+        <ol>
+          <li>Trace <code>fetch()</code> through every network layer.</li>
+          <li>Predict any event-loop puzzle's output.</li>
+          <li>Name all 5 render triggers and explain reconciliation + the key bug.</li>
+          <li>Explain JSI / Fabric / TurboModules and why the old bridge was slow.</li>
+          <li>Open a profiler, find a perf problem, and <em>prove</em> the cause.</li>
+          <li>Design a live-tracking feature stating every trade-off.</li>
+          <li>Store a token correctly and explain why Redux/AsyncStorage is wrong.</li>
+          <li>Write a design doc and an RCA that separates symptom from cause.</li>
+        </ol>
+        <div class="callout"><b>If you can do all 8 cold, you have what the title requires.</b></div>
+      </section>
+
+      <!-- TIME -->
+      <section id="time">
+        <h2><span class="num">// TIME</span>Time estimation</h2>
+        <p>At your <b>1 hour/day (~30 hrs/month)</b> budget:</p>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Path</th><th>Hrs/week</th><th>To senior-confident (L1–L7 + L9)</th><th>To "mastery" (incl. L8, L10)</th></tr></thead>
+            <tbody>
+              <tr><td><b>Aggressive</b></td><td>14 (2 hr/day)</td><td>~7–8 months</td><td>~16–18 months</td></tr>
+              <tr><td><b>Realistic (your pace)</b></td><td>7 (1 hr/day)</td><td>~12–15 months</td><td>~28–34 months</td></tr>
+              <tr><td><b>Part-time / busy</b></td><td>3–4</td><td>~22–26 months</td><td>~40+ months</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:14px;color:var(--ink-dim)"><b>Rough hours per level (realistic):</b> L1 ~45h · L0 ~15h · L3 ~40h · L2 ~30h · L4 ~45h · L8-Android ~50h · L6 ~40h · L5 ~60h · L7 ~50h · L9 ongoing · L10 ongoing.</p>
+        <div class="callout warn"><b>Reality:</b> your stated goal (senior + architect) lands around the <b>12–15 month</b> mark. The full Staff path is a 2.5–3 year arc and depends on opportunity. That's fine — most of the title comes from L1–L7 + L9.</div>
+      </section>
+
+      <!-- PLANS -->
+      <section id="plans">
+        <h2><span class="num">// PLANS</span>Study plans</h2>
+
+        <div class="plan">
+          <h4>Daily plan — your 1 hour, 5 days/week</h4>
+          <p>(Keep weekends free to avoid burnout.)</p>
+          <ul>
+            <li><b>0–10 min:</b> review yesterday — re-explain one concept out loud from memory (highest-ROI study habit).</li>
+            <li><b>10–40 min:</b> the day's main learning — one video segment <em>or</em> one doc section, not both.</li>
+            <li><b>40–60 min:</b> apply it — small exercise, or 20 min on the current mini-project. <b>Never a learn-only day; always touch code.</b></li>
+            <li>End each day writing <b>one sentence:</b> "Today I learned X, which explains why Y in my app."</li>
+          </ul>
+        </div>
+
+        <div class="plan">
+          <h4>Weekly plan</h4>
+          <ul>
+            <li><b>Mon–Thu:</b> new material + exercises.</li>
+            <li><b>Fri:</b> integration — work on the level's mini-project only.</li>
+            <li><b>Weekend (optional, no guilt):</b> if motivated, one longer session for a talk or reading; otherwise rest.</li>
+            <li><b>End of week:</b> can you pass this week's slice of the checkpoint? If no, next week repeats — <em>advance on mastery, not on schedule.</em></li>
+          </ul>
+        </div>
+
+        <div class="plan">
+          <h4>6-month plan (realistic pace)</h4>
+          <ul>
+            <li><b>Month 1–1.5:</b> L1 (JavaScript) + L0 threaded in. → You can explain the event loop, closures, GC.</li>
+            <li><b>Month 2–2.5:</b> L3 (React internals). → You measure re-renders, understand reconciliation.</li>
+            <li><b>Month 3–4:</b> L2 (TypeScript) — convert real files as you go. → Typed app code, generic <code>useFetch</code>.</li>
+            <li><b>Month 4.5–6:</b> L4 (RN internals) — ride your team's migration as the live project. → You can explain the New Architecture; you wrote a Kotlin module.</li>
+            <li><b>Throughout:</b> start L9 habits now (one trade-off comment per review).</li>
+            <li><b>6-month checkpoint:</b> the "I don't know why" feeling is gone for JS, React, and RN core.</li>
+          </ul>
+        </div>
+
+        <div class="plan">
+          <h4>12-month plan</h4>
+          <ul>
+            <li><b>Months 1–6:</b> as above.</li>
+            <li><b>Months 7–8:</b> L8 (Android slice) — read your own crash traces, write modules natively.</li>
+            <li><b>Months 9–10:</b> L6 (Performance) — three measured case studies on your real app.</li>
+            <li><b>Months 11–12:</b> L5 (Advanced RN) begins — offline-first order list + MQTT live-location demo.</li>
+            <li><b>Throughout:</b> one design doc + one real RCA at work (L9).</li>
+            <li><b>12-month checkpoint:</b> you profile-and-prove, you've shipped offline + real-time features, you write design docs. <b>This is the senior bar.</b></li>
+          </ul>
+        </div>
+
+        <div class="plan">
+          <h4>24-month mastery plan</h4>
+          <ul>
+            <li><b>Months 1–12:</b> as above (senior-confident).</li>
+            <li><b>Months 13–15:</b> finish L5 (security done right, OTA, monitoring) — fix the Redux-token habit for good.</li>
+            <li><b>Months 16–20:</b> L7 (System design) — three design docs in your delivery domain; the state-at-scale redesign.</li>
+            <li><b>Months 21–24:</b> L9 deepens (mentor someone, own an RCA end-to-end) + L10 begins (StaffEng reading, start solving unassigned cross-team problems).</li>
+            <li><b>24-month state:</b> you pass all 8 master-verification tests cold, architect features with stated trade-offs, and influence beyond your own code. <b>Go-to architect achieved; on the Staff path.</b></li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- FINAL -->
+      <section id="final" class="end-note">
+        <h2 style="margin-top:0"><span class="num">// FINAL</span>A note to you</h2>
+        <p>Two habits decide whether this works, and both are free:</p>
+        <ol>
+          <li><b>Re-explain out loud from memory.</b> If you can't teach it simply, you don't know it yet. This is your daily 10 minutes.</li>
+          <li><b>Measure before you change anything.</b> Your instinct is to swap-until-it-works. The senior reflex is hypothesis → measure → prove → fix → re-measure. Build that and the title follows.</li>
+        </ol>
+        <p>You don't have a knowledge-quantity problem. You have a mental-models-and-rigor problem — the kind that compounds fast once you start. <b>Begin with Level 1 tomorrow.</b></p>
+      </section>
+
+      <div class="footer">Personalized React Native Mastery Roadmap · books removed · all resources linked · advance on mastery, not on schedule</div>
+
+    </div><!-- /wrap -->
+  </main>
+</div>
+
+<script>
+  // active-section highlight in TOC
+  const links = [...document.querySelectorAll('#toc-nav a')];
+  const map = {};
+  links.forEach(a=>{const id=a.getAttribute('href').slice(1);const el=document.getElementById(id);if(el)map[id]=a;});
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const a=map[e.target.id];
+        if(a)a.classList.add('active');
+      }
+    });
+  },{rootMargin:'-15% 0px -75% 0px',threshold:0});
+  Object.keys(map).forEach(id=>{const el=document.getElementById(id);if(el)obs.observe(el);});
+</script>
+</body>
+</html>
