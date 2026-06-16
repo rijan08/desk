@@ -63,28 +63,19 @@
 
   /* group */
   .group{margin:38px 0 0;}
-  .group-head{display:flex;align-items:baseline;gap:12px;margin-bottom:4px;}
+  .group-head{margin-bottom:4px;}
   .group-head h2{font-family:var(--serif);font-weight:600;font-size:24px;letter-spacing:-.3px;margin:0;color:var(--ink);}
-  .group-head .gcount{font-family:var(--mono);font-size:11px;letter-spacing:1px;color:var(--ink-faint);}
   .group-rule{height:1px;background:linear-gradient(90deg,var(--line),transparent);margin:10px 0 18px;}
 
   /* card grid */
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
   .card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);
-    border-radius:12px;padding:18px 18px 16px;transition:.15s;position:relative;overflow:hidden;}
-  .card::before{content:"";position:absolute;top:0;left:0;width:100%;height:2px;
-    background:var(--accent,var(--teal));opacity:.7;transform:translateY(-2px);transition:.15s;}
-  .card:hover{border-color:var(--line2);transform:translateY(-2px);background:var(--card2);}
-  .card:hover::before{transform:translateY(0);}
+    border-radius:12px;padding:18px;transition:border-color .15s,background .15s;}
+  .card:hover{border-color:var(--line2);background:var(--card2);}
   .card .ctag{font-family:var(--mono);font-size:10px;letter-spacing:1.4px;text-transform:uppercase;
     color:var(--accent,var(--teal));margin-bottom:10px;}
   .card h3{font-family:var(--serif);font-weight:600;font-size:19px;line-height:1.2;margin:0 0 8px;color:var(--ink);letter-spacing:-.2px;}
-  .card p{font-size:13.5px;color:var(--ink-dim);margin:0 0 14px;flex:1;line-height:1.5;}
-  .card .meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;}
-  .card .meta span{font-family:var(--mono);font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;
-    background:var(--bg2);border:1px solid var(--line2);color:var(--ink-faint);padding:2px 7px;border-radius:5px;}
-  .card .go{position:absolute;top:16px;right:16px;color:var(--ink-faint);opacity:0;transition:.15s;}
-  .card:hover .go{opacity:1;color:var(--accent,var(--teal));}
+  .card p{font-size:13.5px;color:var(--ink-dim);margin:0;line-height:1.5;}
 
   /* empty states */
   .empty{font-family:var(--mono);font-size:13px;color:var(--ink-faint);
@@ -178,7 +169,7 @@
 
     const head = document.createElement("div");
     head.className = "group-head";
-    head.innerHTML = '<h2>' + cat + '</h2><span class="gcount" data-gcount></span>';
+    head.innerHTML = '<h2>' + cat + '</h2>';
     group.appendChild(head);
 
     const rule = document.createElement("div");
@@ -201,10 +192,8 @@
         a.dataset.search = (e.title + " " + e.desc + " " + (e.tags||[]).join(" ") + " " + e.category).toLowerCase();
         a.innerHTML =
           '<span class="ctag">' + e.category + '</span>' +
-          '<span class="go"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg></span>' +
           '<h3>' + e.title + '</h3>' +
-          '<p>' + e.desc + '</p>' +
-          '<div class="meta">' + (e.tags||[]).map(t => '<span>' + t + '</span>').join("") + '</div>';
+          '<p>' + e.desc + '</p>';
         grid.appendChild(a);
       });
       group.appendChild(grid);
@@ -227,8 +216,6 @@
         card.style.display = match ? "" : "none";
         if (match) { shown++; groupShown++; }
       });
-      const gc = group.querySelector("[data-gcount]");
-      if (gc) gc.textContent = groupShown ? groupShown + (groupShown === 1 ? " entry" : " entries") : "";
       // When filtering, hide groups with no matching cards (keep empties visible only when no query).
       const hasCards = cards.length > 0;
       group.style.display = (q && groupShown === 0 && hasCards) ? "none" : (q && !hasCards ? "none" : "");
